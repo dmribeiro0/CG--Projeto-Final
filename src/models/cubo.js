@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /* cubo.js eh um exemplo de entidade 
- * vou deixar aqui para consulta apenas */
+ * mantido aqui apenas como referencia */
 
 /* Contrato de entidade (todo arquivo em models/ e world/ segue):
  *   object: THREE.Object3D adicionado na cena (Mesh ou Group)
