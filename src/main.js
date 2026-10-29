@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createLuzes } from './world/luzes.js';
+import { createDrone } from './models/drone.js';
 
 const scene = new THREE.Scene();
 
@@ -39,6 +40,8 @@ const entidades = [];
 /* Inserir aqui as entidades */
 adicionar(createLuzes());
 adicionar(createCubo());	/* apenas um exemplo de entidade, comente a linha para esconder */
+const drone = adicionar(createDrone());
+drone.object.position.set(3, 0, 0);	/* ao lado do cubo para nao sobrepor */
 
 /* Camera orbital com o mouse (desenvolvimento e prints) */
 const controls = new OrbitControls(camera, renderer.domElement);
