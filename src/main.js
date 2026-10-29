@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
+import { createAviao } from './models/aviao.js';
 import { createLuzes } from './world/luzes.js';
 
 const scene = new THREE.Scene();
@@ -14,7 +15,7 @@ const camera =
 		0.1,									/* Plano de recorte mais proximo */
 		1000 									/* Plano de recorte mais distante */
 	);
-camera.position.z = 5;	/* Afasta a camera para ver o cubo, que esta na origem */
+camera.position.set(0, 3, 12);	/* Afasta a camera para ver o aviao, que esta na origem */
 
 const renderer = new THREE.WebGLRenderer();
 /* Tamanho do canvas em pixels (viewport = janela inteira) */
@@ -38,7 +39,8 @@ const entidades = [];
 
 /* Inserir aqui as entidades */
 adicionar(createLuzes());
-adicionar(createCubo());	/* apenas um exemplo de entidade, comente a linha para esconder */
+/* adicionar(createCubo());	exemplo de entidade, descomente para ver */
+adicionar(createAviao());
 
 /* Camera orbital com o mouse (desenvolvimento e prints) */
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -64,4 +66,3 @@ renderer.setAnimationLoop((tempo) => {
 
 	renderer.render(scene, camera);
 });
-
