@@ -3,8 +3,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createLuzes } from './world/luzes.js';
+import { createCeu } from './world/ceu.js';
+import { createNuvens } from './world/nuvens.js';
+import { createAneis } from './world/aneis.js';
+import { createChao } from './world/chao.js';
+import { createPredios } from './world/predios.js';
 
 const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);
 
 /* Camera perspectiva; nasce na origem olhando para -Z */
 const camera = 
@@ -38,7 +44,11 @@ const entidades = [];
 
 /* Inserir aqui as entidades */
 adicionar(createLuzes());
-adicionar(createCubo());	/* apenas um exemplo de entidade, comente a linha para esconder */
+adicionar(createCeu());
+adicionar(createChao());
+adicionar(createPredios());
+adicionar(createNuvens());
+adicionar(createAneis());
 
 /* Camera orbital com o mouse (desenvolvimento e prints) */
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -64,4 +74,3 @@ renderer.setAnimationLoop((tempo) => {
 
 	renderer.render(scene, camera);
 });
-
