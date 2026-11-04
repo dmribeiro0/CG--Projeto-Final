@@ -19,7 +19,6 @@ export function createAneis() {
 	const geometria = new THREE.TorusGeometry(RAIO, TUBO, 16, 48);
 	const material = new THREE.MeshPhongMaterial({
 		color: 0xffd54a,
-		// emissive: 0xaa7700,	/* brilho proprio: destaca o anel contra o ceu */
 		shininess: 80
 	});
 

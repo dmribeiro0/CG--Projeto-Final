@@ -9,7 +9,6 @@ export function createChao() {
 		new THREE.PlaneGeometry(4000, 4000),
 		new THREE.MeshPhongMaterial({
 			color: 0x4a9a62,
-			// emissive: 0x1a4026,	/* brilho proprio: evita o chao escuro com a luz atual */
 			shininess: 0		/* chao fosco */
 		})
 	);

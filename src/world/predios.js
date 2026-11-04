@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CHAO_Y } from './chao.js';
+import { mulberry32 } from '../aleatorio.js';
 
 /* Predios nas laterais do percurso - segue o contrato de entidade */
 
@@ -8,15 +9,6 @@ const Z_INICIO = 20;
 const Z_FIM = -700;
 const X_MIN = 30;		/* borda interna: mantem o corredor do aviao livre */
 const TELHA = 8;		/* metros cobertos por uma repeticao da textura de janelas */
-
-function mulberry32(seed) {
-	return function () {
-		seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-		let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-	};
-}
 
 /* Textura de janelas desenhada em canvas (2x2 janelas por repeticao) */
 function criarTexturaJanelas() {
@@ -44,9 +36,9 @@ export function createPredios() {
 	/* Materiais compartilhados: 3 tons de parede + teto liso */
 	const janelas = criarTexturaJanelas();
 	const paredes = [0xffffff, 0xe6ecf5, 0xcfd8e6].map(cor =>
-		new THREE.MeshPhongMaterial({ map: janelas, color: cor, /*emissive: 0x222a33,*/ shininess: 20 })
+		new THREE.MeshPhongMaterial({ map: janelas, color: cor, shininess: 20 })
 	);
-	const teto = new THREE.MeshPhongMaterial({ color: 0x8a939e, /*emissive: 0x222a33,*/ shininess: 10 });
+	const teto = new THREE.MeshPhongMaterial({ color: 0x8a939e, shininess: 10 });
 
 	const passo = (Z_INICIO - Z_FIM) / POR_LADO;
 
