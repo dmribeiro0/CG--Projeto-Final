@@ -21,7 +21,7 @@ function mulberry32(seed) {
 const geometriaPuff = new THREE.SphereGeometry(1, 16, 12);
 const materialNuvem = new THREE.MeshPhongMaterial({
 	color: 0xffffff,
-	emissive: 0xaaaaaa,	/* brilho proprio: com a luz atual a nuvem ficaria cinza */
+	// emissive: 0xaaaaaa,	/* brilho proprio: com a luz atual a nuvem ficaria cinza */
 	shininess: 5	/* nuvem eh opaca e fosca: brilho especular baixo */
 });
 

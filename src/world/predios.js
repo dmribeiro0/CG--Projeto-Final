@@ -44,9 +44,9 @@ export function createPredios() {
 	/* Materiais compartilhados: 3 tons de parede + teto liso */
 	const janelas = criarTexturaJanelas();
 	const paredes = [0xffffff, 0xe6ecf5, 0xcfd8e6].map(cor =>
-		new THREE.MeshPhongMaterial({ map: janelas, color: cor, emissive: 0x222a33, shininess: 20 })
+		new THREE.MeshPhongMaterial({ map: janelas, color: cor, /*emissive: 0x222a33,*/ shininess: 20 })
 	);
-	const teto = new THREE.MeshPhongMaterial({ color: 0x8a939e, emissive: 0x222a33, shininess: 10 });
+	const teto = new THREE.MeshPhongMaterial({ color: 0x8a939e, /*emissive: 0x222a33,*/ shininess: 10 });
 
 	const passo = (Z_INICIO - Z_FIM) / POR_LADO;
 
