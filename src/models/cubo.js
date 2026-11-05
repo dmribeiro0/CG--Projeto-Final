@@ -5,7 +5,10 @@ import * as THREE from 'three';
 
 /* Contrato de entidade (todo arquivo em models/ e world/ segue):
  *   object: THREE.Object3D adicionado na cena (Mesh ou Group)
- *   update(dt): chamada a cada frame; dt = segundos desde o frame anterior */
+ *   update(dt): chamada a cada frame; dt = segundos desde o frame anterior
+ * Opcionais:
+ *   ancoras: { nome: THREE.Object3D } pontos do modelo onde outros modulos prendem coisas (ex.: camera no cockpit)
+ *   luzes: { nome: THREE.Light } luzes criadas pela entidade; o main.js liga cada uma a uma tecla */
 
 export function createCubo() {
 	const mesh = 

@@ -4,7 +4,7 @@ import { CHAO_Y } from './chao.js';
 /* Ajudantes visuais para conferir escala e orientacao (segue o contrato de entidade, ver models/cubo.js)
  *   grid: no chao, plano XZ, cada quadrado = 1 m
  *   eixos: na origem (centro do aviao), X vermelho, Y verde, Z azul (a frente do jogo eh -Z, oposta ao azul)
- * Comecam escondidos; tecla G liga/desliga */
+ * Comecam escondidos; alternar() mostra/esconde (tecla G, ligada no main.js) */
 
 export function createAjudantes() {
 	const grupo = new THREE.Group();
@@ -17,12 +17,9 @@ export function createAjudantes() {
 
 	grupo.add(grid, eixos);
 
-	window.addEventListener('keydown', (evento) => {
-		if (evento.key === 'g') grupo.visible = !grupo.visible;
-	});
-
 	return {
 		object: grupo,
+		alternar() { grupo.visible = !grupo.visible; },
 		update(dt) {}
 	}
 }
