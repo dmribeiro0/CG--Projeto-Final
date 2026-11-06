@@ -14,6 +14,7 @@ import { createPredios } from './world/predios.js';
 import { createNuvens } from './world/nuvens.js';
 import { createAneis } from './world/aneis.js';
 import { ativarControleFov } from './world/projecao.js';
+import { createFileiraCubos } from './world/demo-cubos.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);	/* Neblina da cor do horizonte: esconde o fim do cenario */
@@ -49,6 +50,7 @@ adicionar(createChao());		/* 30 m abaixo da altura de voo */
 adicionar(createPredios());
 adicionar(createNuvens());
 adicionar(createAneis());		/* primeiro anel em z = -60 */
+adicionar(createFileiraCubos());
 
 /* Personagens: aviao na origem; inimigos a frente, virados para o aviao (+Z) */
 const aviao = adicionar(createAviao());
