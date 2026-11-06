@@ -11,16 +11,16 @@
 
 export const TECLAS = {
 	/* Cameras */
-	trocarCamera:	{ code: 'KeyC',		rotulo: 'C',	descricao: 'Trocar camera' },
+	trocarCamera:	{ code: 'KeyC',		rotulo: 'C',	descricao: 'Trocar câmera' },
 	aumentarFov:	{ code: 'Equal',	rotulo: '+',	descricao: 'Aumentar FOV' },
 	diminuirFov:	{ code: 'Minus',	rotulo: '-',	descricao: 'Diminuir FOV' },
-	resetarFov:		{ code: 'Digit0',	rotulo: '0',	descricao: 'FOV padrao' },	
+	resetarFov:		{ code: 'Digit0',	rotulo: '0',	descricao: 'FOV padrão' },
 
 	/* Luzes (liga/desliga individual) */
 	luzAmbiente:	{ code: 'Digit1',	rotulo: '1',	descricao: 'Luz ambiente' },
 	luzSol:			{ code: 'Digit2',	rotulo: '2',	descricao: 'Sol' },
-	luzFarol:		{ code: 'Digit3',	rotulo: '3',	descricao: 'Farol do aviao' },
-	luzNavegacao:	{ code: 'Digit4',	rotulo: '4',	descricao: 'Luzes de navegacao' },
+	luzFarol:		{ code: 'Digit3',	rotulo: '3',	descricao: 'Farol do avião' },
+	luzNavegacao:	{ code: 'Digit4',	rotulo: '4',	descricao: 'Luzes de navegação' },
 	modoNoite:		{ code: 'KeyN',		rotulo: 'N',	descricao: 'Modo noite' },
 
 	/* Desenvolvimento e interface */
@@ -53,6 +53,14 @@ export function aoPressionar(acao, funcao) {
 		throw new Error(`teclado.js: acao '${acao}' nao existe em TECLAS`);
 	if (!mapaAcaoFuncoes.has(acao)) mapaAcaoFuncoes.set(acao, []);	/* primeira funcao da acao: cria a lista */
 	mapaAcaoFuncoes.get(acao).push(funcao);
+}
+
+/* Teclas que ja tem funcao ligada, na ordem de TECLAS (legenda do HUD).
+ * Chamar depois de ligar as teclas: acao sem funcao nao faz nada e nao deve aparecer */
+export function teclasAtivas() {
+	return Object.keys(TECLAS)
+		.filter((acao) => mapaAcaoFuncoes.has(acao))
+		.map((acao) => TECLAS[acao]);
 }
 
 /* Unico ouvinte de teclado do jogo: a cada tecla pressionada,

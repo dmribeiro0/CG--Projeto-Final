@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createCameras } from './cameras.js';
+import { createHud } from './hud.js';
 import { aoPressionar } from './teclado.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
@@ -64,7 +65,7 @@ delta.object.rotation.y = Math.PI;	/* frente do modelo (-Z) passa a apontar para
 const cameras = createCameras({ renderer, aviao });
 
 /* Controle de FOV (projecao perspectiva): muda o FOV em todas as cameras */
-const fov = createControleFov(() => cameras.todas, (v) => console.log('FOV:', v));
+const fov = createControleFov(() => cameras.todas);
 
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
@@ -77,6 +78,11 @@ aoPressionar('ajudantes',		() => ajudantes.alternar());
 aoPressionar('aumentarFov',		() => fov.aumentar());
 aoPressionar('diminuirFov',		() => fov.diminuir());
 aoPressionar('resetarFov',		() => fov.resetar());
+aoPressionar('hud',				() => hud.alternar());
+
+/* HUD: depois dos controles, porque a legenda lista as teclas ja ligadas.
+ * Mostra as luzes globais e as do aviao (o spread ignora `aviao.luzes` enquanto nao existir) */
+const hud = createHud({ cameras, fov, luzes: { ...luzes.luzes, ...aviao.luzes } });
 
 /* Ao redimensionar a janela: atualiza aspect, projecao e canvas */
 window.addEventListener('resize', () => {
@@ -96,6 +102,7 @@ renderer.setAnimationLoop((tempo) => {
 		entidade.update(dt);
 	}
 	cameras.update(dt);	/* depois das entidades: a camera segue a posicao ja atualizada do aviao */
+	hud.update();
 
 	/* MATRIZ DE PROJECAO - aplicada aqui: o render envia cameras.ativa.projectionMatrix ao vertex
 	 * shader como uniform. La, gl_Position = projectionMatrix * mvPosition, e depois a GPU divide

@@ -5,3 +5,76 @@ body {
 canvas {
 	display: block;
 }
+
+/* HUD: pointer-events none deixa o mouse passar para o canvas (camera livre).
+ * Sem `display` aqui, para o atributo hidden conseguir esconder o HUD */
+.hud {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	color: #f2f5fa;
+	font: 13px/1.5 ui-monospace, monospace;
+}
+
+/* Fundo escuro: o texto continua legivel sobre o ceu claro e no modo noite */
+.hud-painel,
+.hud-legenda {
+	position: absolute;
+	background: rgba(10, 16, 28, 0.7);
+	border-radius: 6px;
+}
+
+.hud-painel {
+	top: 12px;
+	left: 12px;
+	min-width: 190px;
+	padding: 8px 12px;
+}
+
+.hud-linha {
+	display: flex;
+	justify-content: space-between;
+	gap: 24px;
+}
+
+.hud-nome {
+	color: #aab6c8;
+}
+
+.hud-valor {
+	font-weight: 600;
+}
+
+.hud-desligada {
+	color: #7f8a9c;
+}
+
+.hud-separador {
+	margin: 6px 0;
+	border-top: 1px solid rgba(170, 182, 200, 0.35);
+}
+
+.hud-legenda {
+	left: 12px;
+	right: 12px;
+	bottom: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 4px 16px;
+	padding: 6px 12px;
+}
+
+.hud-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.hud-tecla {
+	min-width: 1.4em;
+	padding: 0 4px;
+	text-align: center;
+	border: 1px solid #aab6c8;
+	border-radius: 3px;
+}
