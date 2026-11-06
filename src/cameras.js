@@ -31,6 +31,7 @@ export function createCameras({ renderer, aviao }) {
 
 	return {
 		get ativa() { return cameras[indice]; },
+		todas: cameras,
 
 		trocar() { indice = (indice + 1) % cameras.length; },
 

@@ -13,7 +13,7 @@ import { createChao } from './world/chao.js';
 import { createPredios } from './world/predios.js';
 import { createNuvens } from './world/nuvens.js';
 import { createAneis } from './world/aneis.js';
-import { ativarControleFov } from './world/projecao.js';
+import { createControleFov } from './world/projecao.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);	/* Neblina da cor do horizonte: esconde o fim do cenario */
@@ -63,11 +63,17 @@ delta.object.rotation.y = Math.PI;	/* frente do modelo (-Z) passa a apontar para
 /* Cameras: depois das entidades, porque algumas ficam presas ao aviao */
 const cameras = createCameras({ renderer, aviao });
 
+/* Controle de FOV (projecao perspectiva): muda o FOV em todas as cameras */
+const fov = createControleFov(() => cameras.todas, (v) => console.log('FOV:', v));
+
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
 aoPressionar('luzAmbiente',		() => alternar(luzes.luzes.ambiente));
 aoPressionar('luzSol',			() => alternar(luzes.luzes.sol));
 aoPressionar('ajudantes',		() => ajudantes.alternar());
+aoPressionar('aumentarFov',		() => fov.aumentar());
+aoPressionar('diminuirFov',		() => fov.diminuir());
+aoPressionar('resetarFov',		() => fov.resetar());
 
 /* Ao redimensionar a janela: atualiza aspect, projecao e canvas */
 window.addEventListener('resize', () => {
@@ -90,6 +96,3 @@ renderer.setAnimationLoop((tempo) => {
 
 	renderer.render(scene, cameras.ativa);
 });
-
-/* IMPORTANTE: trocar [camera] por [camera1, camera2] após a adição das outras câmeras */
-ativarControleFov([cameras.ativa]); /* console.log só pra teste */

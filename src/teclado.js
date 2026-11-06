@@ -14,6 +14,7 @@ export const TECLAS = {
 	trocarCamera:	{ code: 'KeyC',		rotulo: 'C',	descricao: 'Trocar camera' },
 	aumentarFov:	{ code: 'Equal',	rotulo: '+',	descricao: 'Aumentar FOV' },
 	diminuirFov:	{ code: 'Minus',	rotulo: '-',	descricao: 'Diminuir FOV' },
+	resetarFov:		{ code: 'Digit0',	rotulo: '0',	descricao: 'FOV padrao' },	
 
 	/* Luzes (liga/desliga individual) */
 	luzAmbiente:	{ code: 'Digit1',	rotulo: '1',	descricao: 'Luz ambiente' },
