@@ -69,11 +69,55 @@ export function createAviao() {
   helice.position.z = -3.05;
   corpo.add(helice);
 
+  // ---------- Âncoras e luzes ----------
+  // Âncora: ponto vazio do modelo; a luz presa nela acompanha o avião (ver README).
+  const ancoraFarol = new THREE.Object3D();
+  ancoraFarol.position.set(0, 0.62, -1.7);   // em cima do nariz, na frente da cabine
+  corpo.add(ancoraFarol);
+
+  const ancoraAsaEsq = new THREE.Object3D();
+  ancoraAsaEsq.position.set(-3.5, 0.05, -0.2); // ponta da asa esquerda
+  corpo.add(ancoraAsaEsq);
+
+  const ancoraAsaDir = new THREE.Object3D();
+  ancoraAsaDir.position.set(3.5, 0.05, -0.2);  // ponta da asa direita
+  corpo.add(ancoraAsaDir);
+
+  // Farol: SpotLight (cone). Parâmetros: cor, intensidade, alcance, ângulo, penumbra, decay.
+  // decay 1 (atenuação suave) para o feixe ainda iluminar o que está a dezenas de metros.
+  const farol = new THREE.SpotLight(0xfff1cc, 90, 150, Math.PI / 6, 0.5, 1);
+  ancoraFarol.add(farol);
+  const alvoFarol = new THREE.Object3D();    // para onde o cone aponta (frente, um pouco para baixo)
+  alvoFarol.position.set(0, -0.8, -10);
+  ancoraFarol.add(alvoFarol);
+  farol.target = alvoFarol;
+
+  // Luzes de navegação: PointLight, vermelha na esquerda e verde na direita (como nos aviões reais).
+  const navEsq = new THREE.PointLight(0xff2020, 3, 8, 2);
+  const navDir = new THREE.PointLight(0x20ff40, 3, 8, 2);
+  ancoraAsaEsq.add(navEsq);
+  ancoraAsaDir.add(navDir);
+
+  // Lâmpadas visíveis: emissive porque essas peças emitem luz de verdade.
+  // O brilho é desligado junto com a luz (ver update).
+  const lampadaGeo = new THREE.SphereGeometry(0.12, 12, 8);
+  const matLampFarol = new THREE.MeshPhongMaterial({ color: 0x555544, emissive: 0xfff1cc });
+  const matLampEsq = new THREE.MeshPhongMaterial({ color: 0x440000, emissive: 0xff2020 });
+  const matLampDir = new THREE.MeshPhongMaterial({ color: 0x004410, emissive: 0x20ff40 });
+  ancoraFarol.add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), matLampFarol));
+  ancoraAsaEsq.add(new THREE.Mesh(lampadaGeo, matLampEsq));
+  ancoraAsaDir.add(new THREE.Mesh(lampadaGeo, matLampDir));
+
   // ---------- Animação ----------
   let t = 0;
 
   function update(dt) {
     t += dt;
+
+    // lâmpada acesa só enquanto a luz correspondente está ligada
+    matLampFarol.emissiveIntensity = farol.intensity > 0 ? 1 : 0;
+    matLampEsq.emissiveIntensity = navEsq.intensity > 0 ? 1 : 0;
+    matLampDir.emissiveIntensity = navDir.intensity > 0 ? 1 : 0;
 
     // hélice girando rápido
     helice.rotation.z += 30 * dt;
@@ -84,5 +128,10 @@ export function createAviao() {
     corpo.position.y = Math.sin(t * 2.0) * 0.15; // sobe e desce
   }
 
-  return { object, update };
+  return {
+    object,
+    update,
+    ancoras: { farol: ancoraFarol, asaEsq: ancoraAsaEsq, asaDir: ancoraAsaDir },
+    luzes: { farol, navEsq, navDir },
+  };
 }
