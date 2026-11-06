@@ -44,7 +44,7 @@ const ajudantes = adicionar(createAjudantes());	/* grid de 1 m e eixos; comecam 
 // adicionar(createCubo());	/* apenas um exemplo de entidade, descomente a linha para mostrar */
 
 /* Cenario: o percurso se estende a frente do aviao, no sentido -Z */
-adicionar(createCeu());
+const ceu = adicionar(createCeu());
 adicionar(createChao());		/* 30 m abaixo da altura de voo */
 adicionar(createPredios());
 adicionar(createNuvens());
@@ -70,6 +70,9 @@ const fov = createControleFov(() => cameras.todas, (v) => console.log('FOV:', v)
 aoPressionar('trocarCamera',	() => cameras.trocar());
 aoPressionar('luzAmbiente',		() => alternar(luzes.luzes.ambiente));
 aoPressionar('luzSol',			() => alternar(luzes.luzes.sol));
+aoPressionar('luzFarol',		() => alternar(aviao.luzes.farol));
+aoPressionar('luzNavegacao',	() => { alternar(aviao.luzes.navEsq); alternar(aviao.luzes.navDir); });
+aoPressionar('modoNoite',		() => luzes.alternarNoite({ ceu: ceu.object.material, fog: scene.fog }));
 aoPressionar('ajudantes',		() => ajudantes.alternar());
 aoPressionar('aumentarFov',		() => fov.aumentar());
 aoPressionar('diminuirFov',		() => fov.diminuir());
