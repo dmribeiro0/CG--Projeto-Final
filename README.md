@@ -47,7 +47,7 @@ Uma âncora é um `THREE.Object3D` vazio (sem geometria) posicionado dentro do m
 ```js
 /* no modelo (ex.: aviao.js) */
 const cockpit = new THREE.Object3D();
-cockpit.position.set(0, 0.6, -0.5);
+cockpit.position.set(0, 1.0, 1.3);
 corpo.add(cockpit);
 return { object, update, ancoras: { cockpit } };
 
