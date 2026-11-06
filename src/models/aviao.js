@@ -135,10 +135,12 @@ export function createAviao() {
     corpo.position.y = Math.sin(t * 2.0) * 0.15; // sobe e desce
   }
 
+
   return {
     object,
     update,
     ancoras: { cockpit, farol: ancoraFarol, asaEsq: ancoraAsaEsq, asaDir: ancoraAsaDir },
     luzes: { farol, navEsq, navDir },
   };
+
 }
