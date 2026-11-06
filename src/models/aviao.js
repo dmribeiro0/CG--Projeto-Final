@@ -42,6 +42,13 @@ export function createAviao() {
   cabine.position.set(0, 0.4, -0.5);
   corpo.add(cabine);
 
+  // ---------- Âncora do cockpit (câmera de 1ª pessoa) ----------
+  // Atrás e acima da cabine, para a vista mostrar as asas; em z maior a câmera
+  // entra na deriva da cauda. No `corpo`, para herdar o balanço do avião.
+  const cockpit = new THREE.Object3D();
+  cockpit.position.set(0, 1.0, 1.3);
+  corpo.add(cockpit);
+
   // ---------- Asas ----------
   const asas = new THREE.Mesh(new THREE.BoxGeometry(7, 0.1, 1.3), matAsa);
   asas.position.set(0, -0.1, -0.2);
@@ -84,5 +91,5 @@ export function createAviao() {
     corpo.position.y = Math.sin(t * 2.0) * 0.15; // sobe e desce
   }
 
-  return { object, update };
+  return { object, update, ancoras: { cockpit } };
 }
