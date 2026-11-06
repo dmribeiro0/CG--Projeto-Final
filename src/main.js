@@ -97,5 +97,8 @@ renderer.setAnimationLoop((tempo) => {
 	}
 	cameras.update(dt);	/* depois das entidades: a camera segue a posicao ja atualizada do aviao */
 
+	/* MATRIZ DE PROJECAO - aplicada aqui: o render envia cameras.ativa.projectionMatrix ao vertex
+	 * shader como uniform. La, gl_Position = projectionMatrix * mvPosition, e depois a GPU divide
+	 * x, y e z por w: eh essa divisao que deixa menor o que esta longe. Definida em cameras.js */
 	renderer.render(scene, cameras.ativa);
 });
