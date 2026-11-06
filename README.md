@@ -22,6 +22,7 @@ assets/             texturas e modelos externos (.jpg, .png, .glb)
 src/
 ├── main.js         cena, renderer, entidades, controles (teclas) e loop
 ├── cameras.js      câmeras, troca entre elas, resize
+├── hud.js          painel com câmera, FOV e luzes, mais a legenda das teclas
 ├── teclado.js      mapa de teclas
 ├── aleatorio.js    gerador pseudo-aleatório com semente (mulberry32)
 ├── models/         personagens (avião, inimigos)
@@ -78,6 +79,7 @@ aoPressionar('ajudantes',		() => ajudantes.alternar());
 |---|---|
 | C | Trocar câmera |
 | + / - | Aumentar / diminuir o FOV |
+| 0 | FOV padrão |
 | 1 | Luz ambiente |
 | 2 | Sol |
 | 3 | Farol do avião |

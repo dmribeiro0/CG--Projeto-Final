@@ -36,14 +36,17 @@ function criarPerspectiva() {
 export function createCameras({ renderer, aviao }) {
 	/* Posicionada a cada frame em update() */
 	const terceira = criarPerspectiva();
+	terceira.name = '3ª pessoa';	/* name: texto mostrado no HUD */
 	const alvo = new THREE.Vector3();	/* reutilizado no update(), para nao criar um vetor por frame */
 
 	/* Sem position: fica no ponto da ancora, olhando para -Z (a frente do aviao) */
 	const primeira = criarPerspectiva();
+	primeira.name = '1ª pessoa';
 	aviao.ancoras.cockpit.add(primeira);
 
 	/* Comeca de lado e no alto, para nao repetir o enquadramento da 3a pessoa */
 	const livre = criarPerspectiva();
+	livre.name = 'Livre';
 	livre.position.set(-14, 9, 16);
 
 	/* Orbita em volta da origem, onde esta o aviao */
