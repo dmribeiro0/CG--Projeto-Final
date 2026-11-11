@@ -11,6 +11,7 @@ import { createLuzes, alternar } from './world/luzes.js';
 import { createAjudantes } from './world/ajudantes.js';
 import { createCeu } from './world/ceu.js';
 import { createChao } from './world/chao.js';
+import { createRua } from './world/rua.js';
 import { createPredios } from './world/predios.js';
 import { createNuvens } from './world/nuvens.js';
 import { createAneis } from './world/aneis.js';
@@ -47,6 +48,7 @@ const ajudantes = adicionar(createAjudantes());	/* grid de 1 m e eixos; comecam 
 /* Cenario: o percurso se estende a frente do aviao, no sentido -Z */
 const ceu = adicionar(createCeu());
 adicionar(createChao());		/* 30 m abaixo da altura de voo */
+adicionar(createRua());			/* avenida e calcadas sob o percurso */
 adicionar(createPredios());
 adicionar(createNuvens());
 adicionar(createAneis());		/* primeiro anel em z = -60 */
