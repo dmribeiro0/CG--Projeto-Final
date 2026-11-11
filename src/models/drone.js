@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+import { carregaTextura } from '../textura.js';
+
 /* drone.js: inimigo em formato de disco voador */
 
 export function createDrone() {
@@ -7,7 +9,12 @@ export function createDrone() {
 
 	/* Corpo: esfera achatada no eixo Y (vira um disco) */
 	const corpoGeo = new THREE.SphereGeometry(1, 32, 16);
-	const corpoMat = new THREE.MeshPhongMaterial({color: 0x8a8f99, shininess: 80});
+		const corpoMat = new THREE.MeshPhongMaterial({
+		color: 0xffffff,
+		shininess: 80,
+		map: carregaTextura('drone_metal.jpg', { repetir: [8, 3] }),
+		normalMap: carregaTextura('drone_metal_normal.jpg', { repetir: [8, 3], cor: false })
+	});
 	const corpo = new THREE.Mesh(corpoGeo, corpoMat);
 	corpo.scale.set(1, 0.3, 1);
 	drone.add(corpo);
