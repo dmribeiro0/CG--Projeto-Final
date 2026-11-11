@@ -1,10 +1,37 @@
 import * as THREE from 'three';
+import { carregaTextura } from '../textura.js';
 
 /**
  * Avião animado.
  * Convenções: Y para cima, frente em -Z, origem no centro, 1 unidade = 1 m.
  * Animações: hélice girando, balanço (roll), arfagem (pitch) e flutuação suave.
+ *
+ * Textura: chapas de metal com frestas e rebites (aviao_metal.jpg + aviao_metal_normal.jpg),
+ * gerada por código (Python/NumPy), sem fonte externa. Uma repetição = 2 m x 2 m do avião.
  */
+
+const TELHA = 2; // metros cobertos por uma repetição da imagem
+
+// Escala as UVs de um cilindro/cone pelas medidas reais: u vai em volta (circunferência),
+// v ao longo do comprimento. Assim as chapas ficam do mesmo tamanho em qualquer peça.
+function uvRevolucao(geo, circunferencia, comprimento) {
+  const uv = geo.attributes.uv;
+  for (let k = 0; k < uv.count; k++) {
+    uv.setXY(k, uv.getX(k) * circunferencia / TELHA, uv.getY(k) * comprimento / TELHA);
+  }
+}
+
+// Escala as UVs de uma caixa (w x h x d) face a face.
+// Ordem das faces no BoxGeometry: +x, -x, +y, -y, +z, -z (4 vértices cada).
+function uvCaixa(geo, w, h, d) {
+  const uv = geo.attributes.uv;
+  for (let k = 0; k < uv.count; k++) {
+    const face = Math.floor(k / 4);
+    const [su, sv] = face < 2 ? [d, h] : face < 4 ? [w, d] : [w, h];
+    uv.setXY(k, uv.getX(k) * su / TELHA, uv.getY(k) * sv / TELHA);
+  }
+}
+
 export function createAviao() {
   // `object` é o grupo que o main.js pode posicionar/mover livremente.
   // `corpo` é o grupo interno que recebe as animações de balanço.
@@ -13,8 +40,13 @@ export function createAviao() {
   object.add(corpo);
 
   // ---------- Materiais ----------
-  const matCorpo = new THREE.MeshPhongMaterial({ color: 0xd9dde3, shininess: 80 });
-  const matAsa = new THREE.MeshPhongMaterial({ color: 0xc0392b, shininess: 50 });
+  // A textura é cinza: `color` multiplica a imagem e dá a tinta (cinza-azulado ou vermelho).
+  // Mesmo `repetir` (padrão) nos dois mapas, senão o relevo sai desalinhado da cor.
+  const metal = carregaTextura('aviao_metal.jpg');
+  const metalRelevo = carregaTextura('aviao_metal_normal.jpg', { cor: false });
+
+  const matCorpo = new THREE.MeshPhongMaterial({ map: metal, normalMap: metalRelevo, color: 0xd9dde3, shininess: 80 });
+  const matAsa = new THREE.MeshPhongMaterial({ map: metal, normalMap: metalRelevo, color: 0xc0392b, shininess: 50 });
   const matVidro = new THREE.MeshPhongMaterial({
     color: 0x66ccff,
     shininess: 120,
@@ -26,12 +58,14 @@ export function createAviao() {
   // ---------- Fuselagem (cilindro deitado no eixo Z, frente em -Z) ----------
   const fuselagemGeo = new THREE.CylinderGeometry(0.5, 0.22, 4, 20);
   fuselagemGeo.rotateX(-Math.PI / 2);
+  uvRevolucao(fuselagemGeo, Math.PI * 0.72, 4); // circunferência média ~2,3 m, 4 m de comprimento
   const fuselagem = new THREE.Mesh(fuselagemGeo, matCorpo);
   corpo.add(fuselagem);
 
   // ---------- Nariz ----------
   const narizGeo = new THREE.ConeGeometry(0.5, 1, 20);
   narizGeo.rotateX(-Math.PI / 2);
+  uvRevolucao(narizGeo, Math.PI * 1.0, 1.118); // base de 3,14 m, geratriz de 1,118 m
   const nariz = new THREE.Mesh(narizGeo, matAsa);
   nariz.position.z = -2.5;
   corpo.add(nariz);
@@ -50,16 +84,22 @@ export function createAviao() {
   corpo.add(cockpit);
 
   // ---------- Asas ----------
-  const asas = new THREE.Mesh(new THREE.BoxGeometry(7, 0.1, 1.3), matAsa);
+  const asasGeo = new THREE.BoxGeometry(7, 0.1, 1.3);
+  uvCaixa(asasGeo, 7, 0.1, 1.3);
+  const asas = new THREE.Mesh(asasGeo, matAsa);
   asas.position.set(0, -0.1, -0.2);
   corpo.add(asas);
 
   // ---------- Cauda ----------
-  const estabHoriz = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 0.7), matAsa);
+  const estabHorizGeo = new THREE.BoxGeometry(2.4, 0.08, 0.7);
+  uvCaixa(estabHorizGeo, 2.4, 0.08, 0.7);
+  const estabHoriz = new THREE.Mesh(estabHorizGeo, matAsa);
   estabHoriz.position.set(0, 0, 1.8);
   corpo.add(estabHoriz);
 
-  const estabVert = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.9, 0.8), matAsa);
+  const estabVertGeo = new THREE.BoxGeometry(0.08, 0.9, 0.8);
+  uvCaixa(estabVertGeo, 0.08, 0.9, 0.8);
+  const estabVert = new THREE.Mesh(estabVertGeo, matAsa);
   estabVert.position.set(0, 0.45, 1.8);
   corpo.add(estabVert);
 
