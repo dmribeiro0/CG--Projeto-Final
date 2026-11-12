@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { createCameras } from './cameras.js';
 import { createHud } from './hud.js';
 import { aoPressionar } from './teclado.js';
+import { createRelevo } from './relevo.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createAviao } from './models/aviao.js';
@@ -69,6 +70,9 @@ const cameras = createCameras({ renderer, aviao });
 /* Controle de FOV (projecao perspectiva): muda o FOV em todas as cameras */
 const fov = createControleFov(() => cameras.todas);
 
+/* Relevo: depois das entidades, para achar os materiais */
+const relevo = createRelevo(scene);
+
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
 aoPressionar('luzAmbiente',		() => alternar(luzes.luzes.ambiente));
@@ -76,6 +80,7 @@ aoPressionar('luzSol',			() => alternar(luzes.luzes.sol));
 aoPressionar('luzFarol',		() => alternar(aviao.luzes.farol));
 aoPressionar('luzNavegacao',	() => { alternar(aviao.luzes.navEsq); alternar(aviao.luzes.navDir); });
 aoPressionar('modoNoite',		() => luzes.alternarNoite({ ceu: ceu.object.material, fog: scene.fog }));
+aoPressionar('relevo',			() => relevo.alternar());
 aoPressionar('ajudantes',		() => ajudantes.alternar());
 aoPressionar('aumentarFov',		() => fov.aumentar());
 aoPressionar('diminuirFov',		() => fov.diminuir());
@@ -84,7 +89,7 @@ aoPressionar('hud',				() => hud.alternar());
 
 /* HUD: depois dos controles, porque a legenda lista as teclas ja ligadas.
  * Mostra as luzes globais e as do aviao (o spread ignora `aviao.luzes` enquanto nao existir) */
-const hud = createHud({ cameras, fov, luzes: { ...luzes.luzes, ...aviao.luzes } });
+const hud = createHud({ cameras, fov, relevo, luzes: { ...luzes.luzes, ...aviao.luzes } });
 
 /* Ao redimensionar a janela: atualiza aspect, projecao e canvas */
 window.addEventListener('resize', () => {

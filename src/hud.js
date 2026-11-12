@@ -38,8 +38,9 @@ function escrever(elemento, texto) {
 	if (elemento.textContent !== texto) elemento.textContent = texto;
 }
 
-/* luzes: { nome: THREE.Light } */
-export function createHud({ cameras, fov, luzes }) {
+/* luzes: { nome: THREE.Light }
+ * relevo: opcional, { ligado } de relevo.js */
+export function createHud({ cameras, fov, luzes, relevo }) {
 	const hud = criar(document.body, 'hud');
 
 	/* Canto superior esquerdo: estado atual */
@@ -51,6 +52,7 @@ export function createHud({ cameras, fov, luzes }) {
 		luz,
 		valor: criarLinha(painel, NOMES_LUZES[chave] ?? chave)
 	}));
+	const valorRelevo = relevo ? criarLinha(painel, 'Relevo') : null;
 
 	/* Rodape: legenda das teclas */
 	const legenda = criar(hud, 'hud-legenda');
@@ -68,6 +70,10 @@ export function createHud({ cameras, fov, luzes }) {
 				const ligada = luz.intensity > 0;
 				escrever(valor, ligada ? 'ON' : 'OFF');
 				valor.classList.toggle('hud-desligada', !ligada);
+			}
+			if (valorRelevo) {
+				escrever(valorRelevo, relevo.ligado ? 'ON' : 'OFF');
+				valorRelevo.classList.toggle('hud-desligada', !relevo.ligado);
 			}
 		},
 
