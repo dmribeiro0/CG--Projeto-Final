@@ -6,7 +6,7 @@ import { carregaTextura } from '../textura.js';
  * Convenções: Y para cima, frente em -Z, origem no centro, 1 unidade = 1 m.
  * Animações: hélice girando, balanço (roll), arfagem (pitch) e flutuação suave.
  *
- * Textura: chapas de metal com frestas e rebites (aviao_metal.jpg + aviao_metal_normal.jpg),
+ * Textura: chapas de metal com frestas e rebites (aviao metal.webp + aviao metal normal.webp),
  * gerada por código (Python/NumPy), sem fonte externa. Uma repetição = 2 m x 2 m do avião.
  */
 
@@ -42,8 +42,8 @@ export function createAviao() {
   // ---------- Materiais ----------
   // A textura é cinza: `color` multiplica a imagem e dá a tinta (cinza-azulado ou vermelho).
   // Mesmo `repetir` (padrão) nos dois mapas, senão o relevo sai desalinhado da cor.
-  const metal = carregaTextura('aviao_metal.jpg');
-  const metalRelevo = carregaTextura('aviao_metal_normal.jpg', { cor: false });
+  const metal = carregaTextura('aviao metal.webp');
+  const metalRelevo = carregaTextura('aviao metal normal.webp', { cor: false });
 
   const matCorpo = new THREE.MeshPhongMaterial({ map: metal, normalMap: metalRelevo, color: 0xd9dde3, shininess: 80 });
   const matAsa = new THREE.MeshPhongMaterial({ map: metal, normalMap: metalRelevo, color: 0xc0392b, shininess: 50 });
