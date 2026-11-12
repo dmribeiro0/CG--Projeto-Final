@@ -146,6 +146,7 @@ aoPressionar('ajudantes',		() => ajudantes.alternar());
 | 3 | Farol do avião |
 | 4 | Luzes de navegação |
 | N | Modo noite |
+| R | Relevo das texturas (liga/desliga os `normalMap`) |
 | G | Grid e eixos |
 | H | Mostrar/esconder HUD |
 

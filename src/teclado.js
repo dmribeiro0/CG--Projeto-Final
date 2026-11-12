@@ -23,6 +23,9 @@ export const TECLAS = {
 	luzNavegacao:	{ code: 'Digit4',	rotulo: '4',	descricao: 'Luzes de navegação' },
 	modoNoite:		{ code: 'KeyN',		rotulo: 'N',	descricao: 'Modo noite' },
 
+	/* Texturas */
+	relevo:			{ code: 'KeyR',		rotulo: 'R',	descricao: 'Relevo das texturas' },
+
 	/* Desenvolvimento e interface */
 	ajudantes:		{ code: 'KeyG',		rotulo: 'G',	descricao: 'Grid e eixos' },
 	hud:			{ code: 'KeyH',		rotulo: 'H',	descricao: 'Mostrar/esconder HUD' }
