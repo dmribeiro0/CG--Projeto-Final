@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mulberry32 } from '../aleatorio.js';
+import { carregaTextura } from '../textura.js';
 
 /* Nuvens do cenario - segue o contrato de entidade, ver models/cubo.js
  * Cada nuvem eh um Group com varias esferas achatadas ("puffs") sobrepostas. */
@@ -10,7 +11,14 @@ const Z_FIM = -700;		/* e se estendem ate o fundo do percurso inicial */
 
 /* Geometria e material compartilhados por todas as nuvens */
 const geometriaPuff = new THREE.SphereGeometry(1, 16, 12);
+/* Textura de nuvem (gerada pelo grupo: ruido fractal sem emenda, ver assets/texturas/nuvem*.png).
+ * u e v do SphereGeometry vao de 0 a 1 em volta da esfera; repetir [2, 1] da 2 "voltas" de textura
+ * na longitude, para os detalhes nao ficarem grandes demais numa esfera achatada */
+const REP = { repetir: [2, 1] };
 const materialNuvem = new THREE.MeshPhongMaterial({
+	map: carregaTextura('nuvem.png', REP),
+	normalMap: carregaTextura('nuvem_normal.png', { ...REP, cor: false }),	/* relevo: "couve-flor" */
+	normalScale: new THREE.Vector2(0.6, 0.6),	/* relevo suave, nuvem nao eh pedra */
 	color: 0xffffff,
 	shininess: 5	/* nuvem eh opaca e fosca: brilho especular baixo */
 });
@@ -29,6 +37,9 @@ function criarNuvem(rand) {
 			(rand() - 0.5) * 2.5,
 			(rand() - 0.5) * 8
 		);
+		/* Gira cada esfera em Y (sem gastar rand(): o layout das nuvens nao muda),
+		 * para que esferas vizinhas mostrem partes diferentes da textura */
+		puff.rotation.y = i * 2.4;
 		nuvem.add(puff);
 	}
 	return nuvem;
