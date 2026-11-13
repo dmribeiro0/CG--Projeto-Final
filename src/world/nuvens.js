@@ -11,10 +11,13 @@ const Z_FIM = -700;		/* e se estendem ate o fundo do percurso inicial */
 
 /* Geometria e material compartilhados por todas as nuvens */
 const geometriaPuff = new THREE.SphereGeometry(1, 16, 12);
-/* Textura de nuvem (gerada pelo grupo: ruido fractal sem emenda, ver assets/texturas/nuvem*.png).
+/* Textura de nuvem: recorte do Day Sky HDRI 069 B do ambientCG (CC0), https://ambientcg.com/view?id=DaySkyHDRI069B
+ * (ver assets/texturas/nuvem*.png; recorte simples do panorama).
  * u e v do SphereGeometry vao de 0 a 1 em volta da esfera; repetir [2, 1] da 2 "voltas" de textura
- * na longitude, para os detalhes nao ficarem grandes demais numa esfera achatada */
-const REP = { repetir: [2, 1] };
+ * na longitude, para os detalhes nao ficarem grandes demais numa esfera achatada.
+ * 'espelhar' vira a imagem a cada repeticao: as bordas se encontram e nao aparece emenda,
+ * entao qualquer recorte serve, sem precisar ser uma textura de ladrilho */
+const REP = { repetir: [2, 1], preenchimento: 'espelhar' };
 const materialNuvem = new THREE.MeshPhongMaterial({
 	map: carregaTextura('nuvem.png', REP),
 	normalMap: carregaTextura('nuvem_normal.png', { ...REP, cor: false }),	/* relevo: "couve-flor" */
