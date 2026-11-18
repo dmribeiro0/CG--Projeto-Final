@@ -24,9 +24,10 @@ src/
 ├── main.js         cena, renderer, entidades, controles (teclas) e loop
 ├── cameras.js      câmeras, troca entre elas, resize
 ├── hud.js          painel com câmera, FOV e luzes, mais a legenda das teclas
-├── teclado.js      mapa de teclas
+├── teclado.js      mapa de teclas: aoPressionar() (evento) e segurando() (tecla apertada)
 ├── textura.js      carregaTextura(): carrega e configura uma imagem de assets/texturas/
 ├── aleatorio.js    gerador pseudo-aleatório com semente (mulberry32)
+├── jogo/           comportamento: move as entidades (controle.js: avião)
 ├── models/         personagens (avião, inimigos)
 └── world/          cenário e luzes globais
 ```
@@ -42,6 +43,16 @@ src/
 3. Seguir as convenções: Y para cima, frente em −Z, origem no centro do modelo, 1 unidade = 1 m, `MeshPhongMaterial`.
 4. Importar em `src/main.js`, no bloco `/* Importar aqui cada entidade */`.
 5. Chamar `adicionar(createX())` no bloco `/* Inserir aqui as entidades */`.
+
+## Movimento
+
+O modelo e o comportamento ficam em arquivos separados. O modelo (`src/models/`) diz como a coisa é e anima as peças internas (hélice, balanço). O módulo em `src/jogo/` move o `object` dele pela cena. Assim, quem move não edita o arquivo de quem modelou.
+
+- **`jogo/controle.js`**: o avião avança sozinho a 30 m/s em −Z, e W A S D o movem em X e Y dentro do corredor da avenida (x de −18 a 18 m, y de −20 a 10 m), inclinando para o lado da curva. Interface: `update(dt)`, `reiniciar()` e `distancia` (metros desde a partida).
+- **Câmeras**: a 3ª pessoa acompanha todo o avanço e 70% do movimento lateral, para o avião se deslocar na tela; a livre anda junto com o avião.
+- **Ordem no loop do `main.js`**: controle → entidades → câmeras → HUD → render. A câmera vem depois do controle; na ordem inversa, usaria a posição do frame anterior e a imagem tremeria.
+
+Tecla segurada (movimento contínuo): acrescentar `segurar: true` na linha da ação em `TECLAS` e perguntar a cada frame com `segurando('acao')`. Ela aparece na legenda do HUD sem precisar de `aoPressionar`.
 
 ## Âncoras
 

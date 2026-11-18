@@ -11,13 +11,18 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
  *   redimensionar(aspect): chamada quando a janela muda de tamanho
  *
  * Cameras, na ordem da troca:
- *   terceira: atras e acima do aviao, acompanha a posicao dele
- *   primeira: no cockpit, presa a ancora do aviao (herda o balanco)
- *   livre: orbita em volta do aviao com o mouse (desenvolvimento e prints) */
+ *   terceira: atras e acima do aviao; acompanha o avanco inteiro e parte do movimento lateral
+ *   primeira: no cockpit, presa a ancora do aviao (herda o balanco e a inclinacao)
+ *   livre: orbita em volta do aviao com o mouse e anda junto com ele (desenvolvimento e prints) */
 
 /* 3a pessoa: posicao da camera e ponto para onde ela olha, ambos relativos ao aviao */
 const OFFSET_TERCEIRA = new THREE.Vector3(0, 3, 12);
 const ALVO_TERCEIRA = new THREE.Vector3(0, 0, -20);
+
+/* Fracao do deslocamento em X e Y do aviao que a 3a pessoa acompanha. Com 1, o aviao ficaria
+ * sempre no centro da tela e o movimento lateral nao apareceria; com 0, sairia da tela nos limites
+ * do corredor (jogo/controle.js). Com 0,7, no limite ele fica a ~6 m do centro */
+const SEGUIR_LADO = 0.7;
 
 /* Cria uma camera perspectiva.
  * MATRIZ DE PROJECAO - definida aqui: o construtor guarda os parametros do frustum e chama
@@ -37,7 +42,9 @@ export function createCameras({ renderer, aviao }) {
 	/* Posicionada a cada frame em update() */
 	const terceira = criarPerspectiva();
 	terceira.name = '3ª pessoa';	/* name: texto mostrado no HUD */
-	const alvo = new THREE.Vector3();	/* reutilizado no update(), para nao criar um vetor por frame */
+	/* Vetores reutilizados no update(), para nao criar objetos a cada frame */
+	const base = new THREE.Vector3();
+	const alvo = new THREE.Vector3();
 
 	/* Sem position: fica no ponto da ancora, olhando para -Z (a frente do aviao) */
 	const primeira = criarPerspectiva();
@@ -49,9 +56,12 @@ export function createCameras({ renderer, aviao }) {
 	livre.name = 'Livre';
 	livre.position.set(-14, 9, 16);
 
-	/* Orbita em volta da origem, onde esta o aviao */
+	/* Orbita em volta do aviao: o alvo da orbita comeca na posicao dele e anda junto (update) */
 	const controls = new OrbitControls(livre, renderer.domElement);
+	controls.target.copy(aviao.object.position);
 	controls.enabled = false;	/* so liga com a camera livre ativa; senao o mouse a move sem aparecer na tela */
+	const anterior = aviao.object.position.clone();	/* posicao do aviao no frame anterior */
+	const deslocamento = new THREE.Vector3();
 
 	const cameras = [terceira, primeira, livre];
 	let indice = 0;
@@ -66,10 +76,20 @@ export function createCameras({ renderer, aviao }) {
 		},
 
 		update(dt) {
-			/* Offset fixo: o aviao ainda nao se desloca, so o grupo interno dele balanca */
 			const posicao = aviao.object.position;
-			terceira.position.copy(posicao).add(OFFSET_TERCEIRA);
-			terceira.lookAt(alvo.copy(posicao).add(ALVO_TERCEIRA));
+
+			/* 3a pessoa: Z inteiro, X e Y em parte. Olha reto para a frente, nao para o aviao:
+			 * assim ele se desloca na tela quando o jogador o move */
+			base.set(posicao.x * SEGUIR_LADO, posicao.y * SEGUIR_LADO, posicao.z);
+			terceira.position.copy(base).add(OFFSET_TERCEIRA);
+			terceira.lookAt(alvo.copy(base).add(ALVO_TERCEIRA));
+
+			/* Livre: camera e alvo da orbita andam o mesmo que o aviao andou, entao o enquadramento
+			 * escolhido com o mouse se mantem. Atualizada mesmo inativa, para estar perto ao trocar */
+			deslocamento.subVectors(posicao, anterior);
+			livre.position.add(deslocamento);
+			controls.target.add(deslocamento);
+			anterior.copy(posicao);
 		},
 
 		redimensionar(aspect) {

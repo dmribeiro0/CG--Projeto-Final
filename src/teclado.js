@@ -4,12 +4,22 @@
  * Usa evento.code (tecla fisica), nao evento.key: funciona com Caps Lock e em qualquer layout.
  * Codigos: https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values
  *
- * As acoes sao ligadas as funcoes no main.js, no bloco "Controles":
- *   aoPressionar('ajudantes', () => ajudantes.alternar());
+ * Dois jeitos de usar uma tecla:
+ *   evento (apertou agora): liga/desliga, troca de camera. Ligado no main.js, no bloco "Controles":
+ *     aoPressionar('ajudantes', () => ajudantes.alternar());
+ *   estado (esta apertada): movimento continuo. Consultado a cada frame por quem move:
+ *     if (segurando('subir')) ...
+ *   Acoes de estado levam `segurar: true` em TECLAS (aparecem na legenda do HUD sem aoPressionar).
  *
  * Para criar uma tecla nova: adicionar uma linha em TECLAS (conferir se o code ja nao esta em uso). */
 
 export const TECLAS = {
+	/* Aviao (tecla segurada, lida por jogo/controle.js) */
+	subir:			{ code: 'KeyW',		rotulo: 'W',	descricao: 'Subir',		segurar: true },
+	descer:			{ code: 'KeyS',		rotulo: 'S',	descricao: 'Descer',	segurar: true },
+	esquerda:		{ code: 'KeyA',		rotulo: 'A',	descricao: 'Esquerda',	segurar: true },
+	direita:		{ code: 'KeyD',		rotulo: 'D',	descricao: 'Direita',	segurar: true },
+
 	/* Cameras */
 	trocarCamera:	{ code: 'KeyC',		rotulo: 'C',	descricao: 'Trocar câmera' },
 	aumentarFov:	{ code: 'Equal',	rotulo: '+',	descricao: 'Aumentar FOV' },
@@ -58,17 +68,36 @@ export function aoPressionar(acao, funcao) {
 	mapaAcaoFuncoes.get(acao).push(funcao);
 }
 
-/* Teclas que ja tem funcao ligada, na ordem de TECLAS (legenda do HUD).
- * Chamar depois de ligar as teclas: acao sem funcao nao faz nada e nao deve aparecer */
+/* Codigos das teclas apertadas neste momento: entra no keydown, sai no keyup */
+const codigosApertados = new Set();
+
+/* true enquanto a tecla da acao estiver apertada. Para movimento: o loop pergunta a cada frame.
+ * So aceita acoes com `segurar: true`, para nao misturar com as de liga/desliga */
+export function segurando(acao) {
+	if (!TECLAS[acao]?.segurar)
+		throw new Error(`teclado.js: acao '${acao}' nao existe em TECLAS ou nao tem segurar: true`);
+	return codigosApertados.has(TECLAS[acao].code);
+}
+
+/* Teclas em uso, na ordem de TECLAS (legenda do HUD): as de evento com funcao ja ligada e as de estado.
+ * Chamar depois de ligar as teclas: acao de evento sem funcao nao faz nada e nao deve aparecer */
 export function teclasAtivas() {
 	return Object.keys(TECLAS)
-		.filter((acao) => mapaAcaoFuncoes.has(acao))
+		.filter((acao) => mapaAcaoFuncoes.has(acao) || TECLAS[acao].segurar)
 		.map((acao) => TECLAS[acao]);
 }
 
-/* Unico ouvinte de teclado do jogo: a cada tecla pressionada,
+/* Ao soltar, a tecla sai do conjunto */
+window.addEventListener('keyup', (evento) => codigosApertados.delete(evento.code));
+
+/* Ao trocar de janela (Alt+Tab) com a tecla apertada, o keyup nao chega: sem limpar,
+ * o aviao continuaria indo para o lado sozinho na volta */
+window.addEventListener('blur', () => codigosApertados.clear());
+
+/* Unico ouvinte de keydown do jogo: registra a tecla como apertada,
  * descobre a acao pelo codigo e chama as funcoes registradas para ela */
 window.addEventListener('keydown', (evento) => {
+	codigosApertados.add(evento.code);	/* antes do repeat: quem segura continua apertado */
 	if (evento.repeat) return;	/* Segurar a tecla nao repete o liga/desliga */
 
 	const acao = mapaCodigoAcao.get(evento.code);

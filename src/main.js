@@ -17,6 +17,8 @@ import { createPredios } from './world/predios.js';
 import { createNuvens } from './world/nuvens.js';
 import { createAneis } from './world/aneis.js';
 import { createControleFov } from './world/projecao.js';
+/* Comportamento (jogo/): move as entidades sem mexer nos arquivos dos modelos */
+import { createControleAviao } from './jogo/controle.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);	/* Neblina da cor do horizonte: esconde o fim do cenario */
@@ -56,6 +58,7 @@ adicionar(createAneis());		/* primeiro anel em z = -60 */
 
 /* Personagens: aviao na origem; inimigos a frente, virados para o aviao (+Z) */
 const aviao = adicionar(createAviao());
+const controle = createControleAviao(aviao);	/* W A S D move; avanca sozinho em -Z */
 
 const drone = adicionar(createDrone());
 drone.object.position.set(-4, 2, -10);
@@ -97,7 +100,10 @@ window.addEventListener('resize', () => {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-/* Loop: atualiza as entidades e desenha um frame */
+/* Loop: atualiza as entidades e desenha um frame.
+ * Ordem fixa, porque cada etapa usa o resultado da anterior:
+ *   controle -> entidades (animacoes) -> camera -> HUD -> render
+ * Ex.: a camera vem depois do controle; ao contrario, usaria a posicao do frame anterior e tremeria */
 let anterior = performance.now();
 
 renderer.setAnimationLoop((tempo) => {
@@ -105,6 +111,7 @@ renderer.setAnimationLoop((tempo) => {
 	const dt = Math.min((tempo - anterior) / 1000, 0.1);
 	anterior = tempo;
 
+	controle.update(dt);	/* move o aviao; antes das entidades e da camera */
 	for (const entidade of entidades) {
 		entidade.update(dt);
 	}
