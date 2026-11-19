@@ -18,7 +18,7 @@ import { segmentoTocaHitbox } from '../colisao.js';
 
 const DISTANCIA = 30;		/* m a frente do aviao; igual a escolta do drone (jogo/inimigos.js): para ele, mira exata */
 const ALCANCE = 150;		/* m da linha testada contra os inimigos (o tiro anda 150 m/s) */
-const RAIO_TIRO = 0.25;		/* raioColisao do tiro do aviao em world/tiros.js */
+const RAIO_TIRO = 0.8;		/* raioColisao do tiro do aviao em world/tiros.js (mudar junto) */
 const TAMANHO = 0.07;		/* fracao da altura da tela (sizeAttenuation: false) */
 const COR_LIVRE = 0xffffff;
 const COR_NO_ALVO = 0x3dff6e;

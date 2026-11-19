@@ -29,15 +29,16 @@ const ATRAS = 15;			/* m atras do aviao: passou da camera (12 m atras), sai do j
 
 const DELTA = {
 	acordar: 250,			/* m a frente do aviao */
-	velocidade: 40			/* m/s em +Z; somada aos 30 do aviao, se aproximam a 70 m/s */
+	velocidade: 25			/* m/s em +Z; somada aos 30 do aviao, se aproximam a 55 m/s */
 };
 
 const DRONE = {
 	acordar: 150,			/* m a frente do aviao */
 	distancia: 30,			/* m a frente do aviao durante a escolta (mesma distancia da mira, jogo/mira.js) */
 	resposta: 1.5,			/* 1/s: rapidez com que chega a posicao de escolta (como em jogo/controle.js) */
-	amplitude: 8,			/* m de ziguezague para cada lado */
-	frequencia: 1.2,		/* rad/s do ziguezague */
+	amplitude: 4,			/* m de ziguezague para cada lado */
+	frequencia: 0.8,		/* rad/s do ziguezague: ate ~3 m/s de lado, da para acompanhar com a mira */
+	entrada: 30,			/* m acima da posicao ao acordar: desce ate ela (chega do ceu) */
 	escolta: 6,				/* s acompanhando o aviao */
 	subida: 12,				/* m/s ao ir embora */
 	afastamento: 45			/* m/s a frente do aviao ao ir embora */
@@ -84,6 +85,7 @@ export function createInimigos({ adicionar, combate, aviao, meta }) {
 				Z_PRIMEIRO - i * ESPACAMENTO + sortear(-SORTEIO_Z, SORTEIO_Z)
 			);
 			inimigo.estado = 'dormindo';
+			inimigo.object.visible = false;	/* invisivel ate acordar: o jogador nao ve quem vem pela frente */
 			inimigo.tempo = 0;
 			inimigo.fase = Math.random() * 2 * Math.PI;
 		});
@@ -99,7 +101,9 @@ export function createInimigos({ adicionar, combate, aviao, meta }) {
 	function acordar(inimigo, p, aviaoP) {
 		inimigo.estado = 'acordado';
 		inimigo.tempo = 0;
+		inimigo.object.visible = true;
 		if (inimigo.tipo === 'delta') {
+			/* Entrada: acorda a 250 m, onde a neblina comeca; vai saindo dela ao se aproximar */
 			/* Mira onde o aviao esta agora: calcula a velocidade lateral para chegar la junto com ele.
 			 * Nao persegue depois: quem se mexe a tempo desvia */
 			const encontro = (aviaoP.z - p.z) / (DELTA.velocidade + VELOCIDADE_FRENTE);	/* s ate o encontro */
@@ -109,7 +113,9 @@ export function createInimigos({ adicionar, combate, aviao, meta }) {
 				DELTA.velocidade
 			);
 		} else {
+			/* Entrada: aparece acima da posicao sorteada e a suavizacao da escolta o faz descer ate ela */
 			inimigo.base.set(p.x, p.y);
+			p.y += DRONE.entrada;
 			inimigo.frente = aviaoP.z - p.z;
 		}
 	}

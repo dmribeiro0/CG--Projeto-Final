@@ -4,14 +4,14 @@ import * as THREE from 'three';
  * Cada anel eh um toro com o eixo em Z: o aviao o atravessa voando em -Z. */
 
 const Z_PRIMEIRO = -60;		/* posicao do primeiro anel */
-const ESPACAMENTO = 50;		/* distancia em Z entre aneis */
+const ESPACAMENTO = 100;	/* distancia em Z entre aneis: um a cada 3,3 s de voo */
 const RAIO = 6;				/* raio do anel: furo de 11 m, folga para os 7 m de envergadura do aviao */
 const TUBO = 0.5;			/* espessura do tubo */
 const DESVIO = 8;			/* deslocamento maximo em X e Y */
 const VELOCIDADE_GIRO = 1.0;	/* rad/s em torno do eixo Z */
 
 /* comprimento: metros do percurso (a meta da partida, no main.js). Um anel a cada ESPACAMENTO,
- * de Z_PRIMEIRO ate o fim do percurso: com 1000 m, 19 aneis; com 3000 m, 59.
+ * de Z_PRIMEIRO ate o fim do percurso: com 1000 m, 10 aneis; com 3000 m, 30.
  * X e Y sao sorteados a cada partida em jogo/aneis.js; o zigue-zague abaixo eh so a posicao inicial */
 export function createAneis({ comprimento = 3000 } = {}) {
 	const QTD_ANEIS = Math.floor((comprimento + Z_PRIMEIRO) / ESPACAMENTO) + 1;
