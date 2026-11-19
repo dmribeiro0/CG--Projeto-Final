@@ -2,6 +2,8 @@
 
 Shooter 3D sobre trilho (estilo Star Fox), projeto final de Computação Gráfica (UNIFESP-ICT), feito com Three.js.
 
+**Jogar online:** https://dmribeiro0.github.io/CG--Projeto-Final/
+
 ## Como rodar
 
 Na raiz do repositório, com um dos comandos (ambos funcionam):
