@@ -79,6 +79,8 @@ const relevo = createRelevo(scene);
 
 /* Partida: pontos, vidas e fim de jogo. Os modulos chamam partida.ganharPontos(), perderVida() e vencer() */
 const partida = createPartida();
+const META = 3000;	/* metros ate a vitoria */
+partida.aoReiniciar(() => controle.reiniciar());	/* Enter: aviao volta ao inicio */
 
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
@@ -116,7 +118,11 @@ renderer.setAnimationLoop((tempo) => {
 	const dt = Math.min((tempo - anterior) / 1000, 0.1);
 	anterior = tempo;
 
-	controle.update(dt);	/* move o aviao; antes das entidades e da camera */
+	/* Move o aviao so durante a partida; antes das entidades e da camera */
+	if (partida.estado === 'jogando') {
+		controle.update(dt);
+		if (controle.distancia >= META) partida.vencer();
+	}
 	for (const entidade of entidades) {
 		entidade.update(dt);
 	}
