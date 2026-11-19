@@ -4,6 +4,7 @@ import { createHud } from './hud.js';
 import { aoPressionar } from './teclado.js';
 import { createRelevo } from './relevo.js';
 import { createPartida } from './partida.js';
+import { createCombate } from './combate.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createAviao } from './models/aviao.js';
@@ -17,6 +18,7 @@ import { createRua } from './world/rua.js';
 import { createPredios } from './world/predios.js';
 import { createNuvens } from './world/nuvens.js';
 import { createAneis } from './world/aneis.js';
+import { createTiros } from './world/tiros.js';
 import { createControleFov } from './world/projecao.js';
 /* Comportamento (jogo/): move as entidades sem mexer nos arquivos dos modelos */
 import { createControleAviao } from './jogo/controle.js';
@@ -55,7 +57,8 @@ adicionar(createChao());		/* 30 m abaixo da altura de voo */
 adicionar(createRua());			/* avenida e calcadas sob o percurso */
 adicionar(createPredios());
 adicionar(createNuvens());
-adicionar(createAneis());		/* primeiro anel em z = -60 */
+const aneis = adicionar(createAneis());		/* primeiro anel em z = -60 */
+const tiros = adicionar(createTiros());		/* projeteis do aviao e dos inimigos */
 
 /* Personagens: aviao na origem; inimigos a frente, virados para o aviao (+Z) */
 const aviao = adicionar(createAviao());
@@ -67,6 +70,12 @@ drone.object.position.set(-4, 2, -10);
 const delta = adicionar(createDelta());
 delta.object.position.set(5, 3, -18);
 delta.object.rotation.y = Math.PI;	/* frente do modelo (-Z) passa a apontar para o aviao */
+
+/* Combate: depois das entidades, porque usa o aviao, os aneis e os tiros.
+ * Cada inimigo precisa ser registrado para poder ser acertado, atirar e colidir. */
+const combate = createCombate({ aviao, tiros, aneis });
+combate.registrarInimigo(drone, 'drone');
+combate.registrarInimigo(delta, 'delta');
 
 /* Cameras: depois das entidades, porque algumas ficam presas ao aviao */
 const cameras = createCameras({ renderer, aviao });
@@ -81,6 +90,13 @@ const relevo = createRelevo(scene);
 const partida = createPartida();
 const META = 3000;	/* metros ate a vitoria */
 partida.aoReiniciar(() => controle.reiniciar());	/* Enter: aviao volta ao inicio */
+partida.aoReiniciar(() => combate.reiniciar());		/* inimigos, aneis e tiros tambem */
+
+/* O combate so avisa o que aconteceu (combate.on); aqui o jogo decide o que cada coisa vale */
+const PONTOS = { anel: 100, drone: 200, delta: 300 };
+combate.on('anelColetado',	() => partida.ganharPontos(PONTOS.anel));
+combate.on('inimigoAbatido',	({ tipo, por }) => { if (por === 'tiro') partida.ganharPontos(PONTOS[tipo]); });
+combate.on('aviaoDanificado',	({ dano }) => { for (let i = 0; i < dano; i++) partida.perderVida(); });
 
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
@@ -126,6 +142,8 @@ renderer.setAnimationLoop((tempo) => {
 	for (const entidade of entidades) {
 		entidade.update(dt);
 	}
+	/* Combate so durante a partida; depois das entidades (ja se moveram) e antes da camera */
+	if (partida.estado === 'jogando') combate.update(dt);
 	cameras.update(dt);	/* depois das entidades: a camera segue a posicao ja atualizada do aviao */
 	hud.update();
 
