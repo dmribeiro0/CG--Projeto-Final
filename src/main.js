@@ -8,8 +8,6 @@ import { createCombate } from './combate.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createAviao } from './models/aviao.js';
-import { createDrone } from './models/drone.js';
-import { createDelta } from './models/delta.js';
 import { createLuzes, alternar } from './world/luzes.js';
 import { createAjudantes } from './world/ajudantes.js';
 import { createCeu } from './world/ceu.js';
@@ -22,6 +20,9 @@ import { createTiros } from './world/tiros.js';
 import { createControleFov } from './world/projecao.js';
 /* Comportamento (jogo/): move as entidades sem mexer nos arquivos dos modelos */
 import { createControleAviao } from './jogo/controle.js';
+import { createInimigos } from './jogo/inimigos.js';
+import { createPercursoAneis } from './jogo/aneis.js';
+import { createMira } from './jogo/mira.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);	/* Neblina da cor do horizonte: esconde o fim do cenario */
@@ -60,22 +61,21 @@ adicionar(createNuvens());
 const aneis = adicionar(createAneis());		/* primeiro anel em z = -60 */
 const tiros = adicionar(createTiros());		/* projeteis do aviao e dos inimigos */
 
-/* Personagens: aviao na origem; inimigos a frente, virados para o aviao (+Z) */
+/* Personagens: aviao na origem */
 const aviao = adicionar(createAviao());
 const controle = createControleAviao(aviao);	/* W A S D move; avanca sozinho em -Z */
-
-const drone = adicionar(createDrone());
-drone.object.position.set(-4, 2, -10);
-
-const delta = adicionar(createDelta());
-delta.object.position.set(5, 3, -18);
-delta.object.rotation.y = Math.PI;	/* frente do modelo (-Z) passa a apontar para o aviao */
 
 /* Combate: depois das entidades, porque usa o aviao, os aneis e os tiros.
  * Cada inimigo precisa ser registrado para poder ser acertado, atirar e colidir. */
 const combate = createCombate({ aviao, tiros, aneis });
-combate.registrarInimigo(drone, 'drone');
-combate.registrarInimigo(delta, 'delta');
+
+/* Inimigos: espalhados pelos 3 km, criados e registrados no combate por jogo/inimigos.js */
+const inimigos = createInimigos({ adicionar, combate, aviao });
+const percursoAneis = createPercursoAneis(aneis);	/* X e Y dos aneis sorteados a cada partida */
+
+/* Mira: na linha do tiro; nao entra em `entidades` porque precisa rodar depois do combate (ver loop) */
+const mira = createMira({ aviao, combate });
+scene.add(mira.object);
 
 /* Cameras: depois das entidades, porque algumas ficam presas ao aviao */
 const cameras = createCameras({ renderer, aviao });
@@ -91,6 +91,9 @@ const partida = createPartida();
 const META = 3000;	/* metros ate a vitoria */
 partida.aoReiniciar(() => controle.reiniciar());	/* Enter: aviao volta ao inicio */
 partida.aoReiniciar(() => combate.reiniciar());		/* inimigos, aneis e tiros tambem */
+/* Depois do combate: ele devolve inimigos e aneis ao estado inicial, e estes sorteiam posicoes novas */
+partida.aoReiniciar(() => inimigos.reiniciar());
+partida.aoReiniciar(() => percursoAneis.reiniciar());
 
 /* O combate so avisa o que aconteceu (combate.on); aqui o jogo decide o que cada coisa vale */
 const PONTOS = { anel: 100, drone: 200, delta: 300 };
@@ -125,7 +128,7 @@ window.addEventListener('resize', () => {
 
 /* Loop: atualiza as entidades e desenha um frame.
  * Ordem fixa, porque cada etapa usa o resultado da anterior:
- *   controle -> entidades (animacoes) -> camera -> HUD -> render
+ *   controle -> inimigos -> entidades (animacoes) -> combate -> mira -> camera -> HUD -> render
  * Ex.: a camera vem depois do controle; ao contrario, usaria a posicao do frame anterior e tremeria */
 let anterior = performance.now();
 
@@ -134,16 +137,21 @@ renderer.setAnimationLoop((tempo) => {
 	const dt = Math.min((tempo - anterior) / 1000, 0.1);
 	anterior = tempo;
 
-	/* Move o aviao so durante a partida; antes das entidades e da camera */
+	/* Move aviao e inimigos so durante a partida; antes das entidades e da camera.
+	 * Inimigos depois do controle: acordam e miram pela posicao ja atualizada do aviao */
 	if (partida.estado === 'jogando') {
 		controle.update(dt);
+		inimigos.update(dt);
 		if (controle.distancia >= META) partida.vencer();
 	}
 	for (const entidade of entidades) {
 		entidade.update(dt);
 	}
 	/* Combate so durante a partida; depois das entidades (ja se moveram) e antes da camera */
-	if (partida.estado === 'jogando') combate.update(dt);
+	if (partida.estado === 'jogando') {
+		combate.update(dt);
+		mira.update();	/* depois do combate: usa as hitboxes ja atualizadas neste frame */
+	}
 	cameras.update(dt);	/* depois das entidades: a camera segue a posicao ja atualizada do aviao */
 	hud.update();
 

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /* Aneis bonus - segue o contrato de entidade, ver models/cubo.js
  * Cada anel eh um toro com o eixo em Z: o aviao o atravessa voando em -Z. */
 
-const QTD_ANEIS = 12;
+const QTD_ANEIS = 59;		/* de z = -60 a -2960: cobre os 3 km da partida (X e Y sorteados em jogo/aneis.js) */
 const Z_PRIMEIRO = -60;		/* posicao do primeiro anel */
 const ESPACAMENTO = 50;		/* distancia em Z entre aneis */
 const RAIO = 6;				/* raio do anel: furo de 11 m, folga para os 7 m de envergadura do aviao */
