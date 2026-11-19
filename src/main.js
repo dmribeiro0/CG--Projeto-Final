@@ -3,6 +3,7 @@ import { createCameras } from './cameras.js';
 import { createHud } from './hud.js';
 import { aoPressionar } from './teclado.js';
 import { createRelevo } from './relevo.js';
+import { createPartida } from './partida.js';
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createAviao } from './models/aviao.js';
@@ -76,6 +77,9 @@ const fov = createControleFov(() => cameras.todas);
 /* Relevo: depois das entidades, para achar os materiais */
 const relevo = createRelevo(scene);
 
+/* Partida: pontos, vidas e fim de jogo. Os modulos chamam partida.ganharPontos(), perderVida() e vencer() */
+const partida = createPartida();
+
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
 aoPressionar('luzAmbiente',		() => alternar(luzes.luzes.ambiente));
@@ -84,6 +88,7 @@ aoPressionar('luzFarol',		() => alternar(aviao.luzes.farol));
 aoPressionar('luzNavegacao',	() => { alternar(aviao.luzes.navEsq); alternar(aviao.luzes.navDir); });
 aoPressionar('modoNoite',		() => luzes.alternarNoite({ ceu: ceu.object.material, fog: scene.fog }));
 aoPressionar('relevo',			() => relevo.alternar());
+aoPressionar('reiniciar',		() => partida.reiniciar());
 aoPressionar('ajudantes',		() => ajudantes.alternar());
 aoPressionar('aumentarFov',		() => fov.aumentar());
 aoPressionar('diminuirFov',		() => fov.diminuir());

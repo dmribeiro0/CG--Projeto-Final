@@ -78,3 +78,47 @@ canvas {
 	border: 1px solid #aab6c8;
 	border-radius: 3px;
 }
+
+
+/* Partida (partida.js): placar e tela de fim, fora do HUD para a tecla H nao esconder */
+.placar,
+.fim {
+	position: fixed;
+	pointer-events: none;
+	color: #f2f5fa;
+	font: 600 16px/1.5 ui-monospace, monospace;
+	white-space: pre;
+}
+
+.placar {
+	top: 12px;
+	right: 12px;
+	padding: 8px 12px;
+	background: rgba(10, 16, 28, 0.7);
+	border-radius: 6px;
+}
+
+.fim {
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	background: rgba(10, 16, 28, 0.6);
+}
+
+/* display: flex acima venceria o atributo hidden */
+.fim[hidden] {
+	display: none;
+}
+
+.fim-titulo {
+	font-size: 48px;
+}
+
+.fim-dica {
+	color: #aab6c8;
+	font-size: 14px;
+	font-weight: 400;
+}

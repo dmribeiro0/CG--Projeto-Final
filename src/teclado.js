@@ -36,6 +36,9 @@ export const TECLAS = {
 	/* Texturas */
 	relevo:			{ code: 'KeyR',		rotulo: 'R',	descricao: 'Relevo das texturas' },
 
+	/* Partida */
+	reiniciar:		{ code: 'Enter',	rotulo: 'Enter',	descricao: 'Reiniciar partida' },
+
 	/* Desenvolvimento e interface */
 	ajudantes:		{ code: 'KeyG',		rotulo: 'G',	descricao: 'Grid e eixos' },
 	hud:			{ code: 'KeyH',		rotulo: 'H',	descricao: 'Mostrar/esconder HUD' }
