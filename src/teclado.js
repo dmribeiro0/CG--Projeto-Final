@@ -20,6 +20,9 @@ export const TECLAS = {
 	esquerda:		{ code: 'KeyA',		rotulo: 'A',	descricao: 'Esquerda',	segurar: true },
 	direita:		{ code: 'KeyD',		rotulo: 'D',	descricao: 'Direita',	segurar: true },
 
+	/* Combate (tecla segurada, lida por combate.js) */
+	atirar:			{ code: 'Space',	rotulo: 'Espaço',	descricao: 'Atirar',	segurar: true },
+
 	/* Cameras */
 	trocarCamera:	{ code: 'KeyC',		rotulo: 'C',	descricao: 'Trocar câmera' },
 	aumentarFov:	{ code: 'Equal',	rotulo: '+',	descricao: 'Aumentar FOV' },

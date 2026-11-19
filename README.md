@@ -30,6 +30,8 @@ src/
 ├── textura.js      carregaTextura(): carrega e configura uma imagem de assets/texturas/
 ├── aleatorio.js    gerador pseudo-aleatório com semente (mulberry32)
 ├── jogo/           comportamento: move as entidades (controle.js: avião)
+├── colisao.js      hitboxes (esferas) e testes de colisão
+├── combate.js      tiros, colisões e anéis; avisa o que aconteceu por eventos
 ├── models/         personagens (avião, inimigos)
 └── world/          cenário e luzes globais
 ```
@@ -138,6 +140,20 @@ new THREE.MeshPhongMaterial({
 - **Textura escura ou com outra cor**: sobrou `color` no material. `color` **multiplica** a textura; remover para ver a imagem pura.
 - **Borrão** (imagem esticada) ou **textura microscópica**: ajustar `repetir`.
 
+## Combate e colisões
+
+`src/combate.js` cuida de tudo o que acontece entre os personagens, e **só avisa** o que aconteceu por eventos (`combate.on(nome, funcao)`). Quem decide o que cada evento vale é o `main.js`, que liga os eventos à partida (`partida.js`): pontos, vidas e telas de fim de jogo ficam lá.
+
+```js
+combate.on('anelColetado',    () => partida.ganharPontos(PONTOS.anel));
+combate.on('aviaoDanificado', () => partida.perderVida());
+```
+
+- **Ao adicionar um inimigo novo:** depois de `adicionar(createX())`, chamar `combate.registrarInimigo(entidade, 'drone' | 'delta')`. Para um tipo novo, acrescentar a vida, a cadência, as bocas de tiro (`INIMIGOS`) e o hitbox (`HITBOX` em `colisao.js`).
+- **Regras:** as constantes no topo de `combate.js` (cadência, vida dos inimigos, dano, invulnerabilidade) são o lugar de ajustar o jogo. Os pontos de cada coisa ficam em `PONTOS`, no `main.js`.
+- **Reinício:** `partida.reiniciar()` chama `combate.reiniciar()`, que devolve inimigos (posição e vida), anéis e tiros ao início.
+- **Tiros:** `src/world/tiros.js` mantém um conjunto fixo de projéteis (object pooling): `disparar()` reaproveita um tiro parado, nada é criado durante a partida.
+
 ## Teclas
 
 O mapa de teclas fica em `TECLAS`, em `src/teclado.js`; para criar uma tecla nova, adicionar uma linha lá (o arquivo acusa erro se o mesmo código for usado duas vezes). Cada tecla é ligada a uma função no bloco "Controles" do `src/main.js`, então lendo o `main.js` dá para ver tudo o que o jogo responde. Os módulos não ouvem o teclado: expõem funções (ex.: `cameras.trocar()`, `ajudantes.alternar()`) e o `main.js` faz a ligação.
@@ -159,6 +175,7 @@ aoPressionar('ajudantes',		() => ajudantes.alternar());
 | 3 | Farol do avião |
 | 4 | Luzes de navegação |
 | N | Modo noite |
+| Espaço | Atirar (segurar repete) |
 | R | Relevo das texturas (liga/desliga os `normalMap`) |
 | G | Grid e eixos |
 | H | Mostrar/esconder HUD |
