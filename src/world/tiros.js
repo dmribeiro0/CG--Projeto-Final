@@ -11,7 +11,7 @@ Cada tiro: { mesh, dono: 'aviao' | 'inimigo', ativo, velocidade (Vector3), anter
 // raio e comprimento: desenho do tiro
 // raioColisao: usado nos testes de colisão (um pouco maior que o desenho do tiro do avião)
 const CONFIG = {
-	aviao:   { quantidade: 24, cor: 0x66f0ff, velocidade: 150, vida: 2.2, raio: 0.15, comprimento: 3.2, raioColisao: 0.25 },
+	aviao:   { quantidade: 24, cor: 0x66f0ff, velocidade: 150, vida: 2.2, raio: 0.15, comprimento: 3.2, raioColisao: 0.8 },	// 0.8: acerto generoso (o tiro que passa raspando conta)
 	inimigo: { quantidade: 48, cor: 0xff5a2a, velocidade: 45,  vida: 4.0, raio: 0.3,  comprimento: 1.4, raioColisao: 0.3 }
 };
 

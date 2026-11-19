@@ -54,7 +54,12 @@ O modelo e o comportamento ficam em arquivos separados. O modelo (`src/models/`)
 
 - **`jogo/controle.js`**: o avião avança sozinho a 30 m/s em −Z, e W A S D o movem em X e Y dentro do corredor da avenida (x de −18 a 18 m, y de −20 a 10 m), inclinando para o lado da curva. Interface: `update(dt)`, `reiniciar()` e `distancia` (metros desde a partida).
 - **Câmeras**: a 3ª pessoa acompanha todo o avanço e 70% do movimento lateral, para o avião se deslocar na tela; a livre anda junto com o avião.
-- **Ordem no loop do `main.js`**: controle → entidades → câmeras → HUD → render. A câmera vem depois do controle; na ordem inversa, usaria a posição do frame anterior e a imagem tremeria.
+- **`jogo/inimigos.js`**: inimigos espalhados até a meta, com posição e ordem sorteadas a cada partida. Ficam invisíveis até o avião chegar perto. O delta faz uma investida (25 m/s, mirando onde o avião estava); o drone desce do céu, escolta 30 m à frente ziguezagueando e vai embora depois de 6 s.
+- **`jogo/aneis.js`**: X e Y dos anéis sorteados a cada partida, no máximo 20 m de um para o outro, dentro do corredor.
+- **`jogo/mira.js`**: mira 30 m à frente, na linha do tiro; fica verde quando o tiro vai acertar um inimigo.
+- **Meta**: `META`, no topo do `main.js`, é o único lugar do comprimento do percurso. A partida, os anéis e os inimigos se ajustam a ela.
+- **Reinício**: `inimigos.reiniciar()` e `percursoAneis.reiniciar()` rodam depois de `combate.reiniciar()`, que devolve tudo ao estado inicial antes do novo sorteio.
+- **Ordem no loop do `main.js`**: controle → inimigos → entidades → combate → mira → câmeras → HUD → render. A câmera vem depois do controle; na ordem inversa, usaria a posição do frame anterior e a imagem tremeria.
 
 Tecla segurada (movimento contínuo): acrescentar `segurar: true` na linha da ação em `TECLAS` e perguntar a cada frame com `segurando('acao')`. Ela aparece na legenda do HUD sem precisar de `aoPressionar`.
 

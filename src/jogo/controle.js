@@ -14,19 +14,20 @@ import { BORDA_CALCADA } from '../world/rua.js';
  *   reiniciar(): volta o aviao ao ponto de partida, parado
  *   distancia: metros percorridos desde a partida (leitura) */
 
-const VELOCIDADE_FRENTE = 30;	/* m/s em -Z: 3 km em 100 s */
+export const VELOCIDADE_FRENTE = 30;	/* m/s em -Z: 1 km em ~33 s, 3 km em 100 s */
 const VELOCIDADE_LADO = 18;		/* m/s maxima em X e em Y */
 const RESPOSTA = 6;				/* 1/s: rapidez com que a velocidade chega ao pedido do jogador */
 
-/* Corredor de voo: entre as calcadas e acima da rua, assim o aviao nunca entra num predio */
+/* Corredor de voo: entre as calcadas e acima da rua, assim o aviao nunca entra num predio.
+ * Exportado: inimigos e aneis (jogo/inimigos.js, jogo/aneis.js) sao sorteados dentro dele */
 const MEIA_ENVERGADURA = 3.5;	/* ponta da asa em models/aviao.js */
-const LIMITE_X = BORDA_CALCADA - MEIA_ENVERGADURA - 4.5;	/* 18 m: 4,5 m de folga ate a fachada */
-const Y_MIN = CHAO_Y + 10;		/* -20: 10 m acima da rua */
-const Y_MAX = 10;
+export const LIMITE_X = BORDA_CALCADA - MEIA_ENVERGADURA - 4.5;	/* 18 m: 4,5 m de folga ate a fachada */
+export const Y_MIN = CHAO_Y + 10;		/* -20: 10 m acima da rua */
+export const Y_MAX = 10;
 
 /* Inclinacao na velocidade maxima: o aviao "deita" para o lado da curva e levanta o nariz ao subir */
 const ROLAGEM_MAX = 0.6;	/* rad em Z */
-const ARFAGEM_MAX = 0.25;	/* rad em X */
+const ARFAGEM_MAX = 0.08;	/* rad em X (~4,6 graus): o tiro segue o nariz; com 0.25 desviava 7,7 m a 30 m */
 
 export function createControleAviao(aviao) {
 	const inicio = aviao.object.position.clone();
