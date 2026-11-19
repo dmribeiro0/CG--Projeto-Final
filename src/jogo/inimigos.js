@@ -3,7 +3,7 @@ import { createDrone } from '../models/drone.js';
 import { createDelta } from '../models/delta.js';
 import { LIMITE_X, Y_MIN, Y_MAX, VELOCIDADE_FRENTE } from './controle.js';
 
-/* Inimigos do percurso: cria, distribui ao longo dos 3 km e move cada um conforme o tipo.
+/* Inimigos do percurso: cria, distribui ao longo do percurso (ate a meta) e move cada um conforme o tipo.
  * Os modelos (models/drone.js, models/delta.js) so dizem como o inimigo eh; o movimento fica aqui.
  * Tiro, dano e abate sao do combate.js: cada inimigo eh registrado nele (registrarInimigo).
  *
@@ -22,7 +22,7 @@ import { LIMITE_X, Y_MIN, Y_MAX, VELOCIDADE_FRENTE } from './controle.js';
 const Z_PRIMEIRO = -220;
 const ESPACAMENTO = 130;
 const SORTEIO_Z = 40;
-const QTD = 21;				/* de -220 a ~-2820: o ultimo acorda antes dos 3 km */
+const FIM_LIVRE = 100;		/* m antes da meta sem inimigo: o ultimo encontro acontece antes da vitoria */
 const MARGEM = 3;			/* m entre o inimigo e o limite do corredor de voo */
 
 const ATRAS = 15;			/* m atras do aviao: passou da camera (12 m atras), sai do jogo */
@@ -45,10 +45,14 @@ const DRONE = {
 
 const sortear = (min, max) => min + Math.random() * (max - min);
 
-export function createInimigos({ adicionar, combate, aviao }) {
+/* meta: metros do percurso (main.js). Quantos inimigos cabem de Z_PRIMEIRO ate FIM_LIVRE antes da meta,
+ * um a cada ESPACAMENTO: com 1000 m, 5; com 3000 m, 21 */
+export function createInimigos({ adicionar, combate, aviao, meta }) {
+	const qtd = Math.max(0, Math.floor((meta - FIM_LIVRE - SORTEIO_Z + Z_PRIMEIRO) / ESPACAMENTO) + 1);
+
 	/* Metade de cada tipo. Os modelos sao criados uma vez; a cada partida so a ordem e a posicao mudam */
 	const inimigos = [];
-	for (let i = 0; i < QTD; i++) {
+	for (let i = 0; i < qtd; i++) {
 		const tipo = i % 2 === 0 ? 'drone' : 'delta';
 		const entidade = adicionar(tipo === 'drone' ? createDrone() : createDelta());
 		if (tipo === 'delta') entidade.object.rotation.y = Math.PI;	/* frente do modelo (-Z) virada para o aviao */

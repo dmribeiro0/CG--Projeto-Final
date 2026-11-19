@@ -24,6 +24,9 @@ import { createInimigos } from './jogo/inimigos.js';
 import { createPercursoAneis } from './jogo/aneis.js';
 import { createMira } from './jogo/mira.js';
 
+/* Meta: metros ate a vitoria. Valor unico do jogo: a partida, os aneis e os inimigos se distribuem por ele */
+const META = 1000;
+
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);	/* Neblina da cor do horizonte: esconde o fim do cenario */
 
@@ -58,7 +61,7 @@ adicionar(createChao());		/* 30 m abaixo da altura de voo */
 adicionar(createRua());			/* avenida e calcadas sob o percurso */
 adicionar(createPredios());
 adicionar(createNuvens());
-const aneis = adicionar(createAneis());		/* primeiro anel em z = -60 */
+const aneis = adicionar(createAneis({ comprimento: META }));	/* um anel a cada 50 m, de z = -60 ate a meta */
 const tiros = adicionar(createTiros());		/* projeteis do aviao e dos inimigos */
 
 /* Personagens: aviao na origem */
@@ -69,8 +72,8 @@ const controle = createControleAviao(aviao);	/* W A S D move; avanca sozinho em 
  * Cada inimigo precisa ser registrado para poder ser acertado, atirar e colidir. */
 const combate = createCombate({ aviao, tiros, aneis });
 
-/* Inimigos: espalhados pelos 3 km, criados e registrados no combate por jogo/inimigos.js */
-const inimigos = createInimigos({ adicionar, combate, aviao });
+/* Inimigos: espalhados ate a meta, criados e registrados no combate por jogo/inimigos.js */
+const inimigos = createInimigos({ adicionar, combate, aviao, meta: META });
 const percursoAneis = createPercursoAneis(aneis);	/* X e Y dos aneis sorteados a cada partida */
 
 /* Mira: na linha do tiro; nao entra em `entidades` porque precisa rodar depois do combate (ver loop) */
@@ -87,8 +90,7 @@ const fov = createControleFov(() => cameras.todas);
 const relevo = createRelevo(scene);
 
 /* Partida: pontos, vidas e fim de jogo. Os modulos chamam partida.ganharPontos(), perderVida() e vencer() */
-const partida = createPartida();
-const META = 3000;	/* metros ate a vitoria */
+const partida = createPartida({ meta: META });	/* META definida no topo */
 partida.aoReiniciar(() => controle.reiniciar());	/* Enter: aviao volta ao inicio */
 partida.aoReiniciar(() => combate.reiniciar());		/* inimigos, aneis e tiros tambem */
 /* Depois do combate: ele devolve inimigos e aneis ao estado inicial, e estes sorteiam posicoes novas */
@@ -142,6 +144,7 @@ renderer.setAnimationLoop((tempo) => {
 	if (partida.estado === 'jogando') {
 		controle.update(dt);
 		inimigos.update(dt);
+		partida.atualizarDistancia(controle.distancia);
 		if (controle.distancia >= META) partida.vencer();
 	}
 	for (const entidade of entidades) {

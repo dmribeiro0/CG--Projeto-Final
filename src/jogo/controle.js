@@ -14,7 +14,7 @@ import { BORDA_CALCADA } from '../world/rua.js';
  *   reiniciar(): volta o aviao ao ponto de partida, parado
  *   distancia: metros percorridos desde a partida (leitura) */
 
-export const VELOCIDADE_FRENTE = 30;	/* m/s em -Z: 3 km em 100 s */
+export const VELOCIDADE_FRENTE = 30;	/* m/s em -Z: 1 km em ~33 s, 3 km em 100 s */
 const VELOCIDADE_LADO = 18;		/* m/s maxima em X e em Y */
 const RESPOSTA = 6;				/* 1/s: rapidez com que a velocidade chega ao pedido do jogador */
 
@@ -27,7 +27,7 @@ export const Y_MAX = 10;
 
 /* Inclinacao na velocidade maxima: o aviao "deita" para o lado da curva e levanta o nariz ao subir */
 const ROLAGEM_MAX = 0.6;	/* rad em Z */
-const ARFAGEM_MAX = 0.25;	/* rad em X */
+const ARFAGEM_MAX = 0.08;	/* rad em X (~4,6 graus): o tiro segue o nariz; com 0.25 desviava 7,7 m a 30 m */
 
 export function createControleAviao(aviao) {
 	const inicio = aviao.object.position.clone();
