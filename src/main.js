@@ -87,8 +87,8 @@ const fov = createControleFov(() => cameras.todas);
 const relevo = createRelevo(scene);
 
 /* Partida: pontos, vidas e fim de jogo. Os modulos chamam partida.ganharPontos(), perderVida() e vencer() */
-const partida = createPartida();
-const META = 3000;	/* metros ate a vitoria */
+const META = 1000;	/* metros ate a vitoria */
+const partida = createPartida({ meta: META });
 partida.aoReiniciar(() => controle.reiniciar());	/* Enter: aviao volta ao inicio */
 partida.aoReiniciar(() => combate.reiniciar());		/* inimigos, aneis e tiros tambem */
 
@@ -137,6 +137,7 @@ renderer.setAnimationLoop((tempo) => {
 	/* Move o aviao so durante a partida; antes das entidades e da camera */
 	if (partida.estado === 'jogando') {
 		controle.update(dt);
+		partida.atualizarDistancia(controle.distancia);
 		if (controle.distancia >= META) partida.vencer();
 	}
 	for (const entidade of entidades) {

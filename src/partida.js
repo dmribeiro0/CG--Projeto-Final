@@ -1,11 +1,13 @@
-/* Estado da partida: pontos, vidas, vitoria/derrota e reinicio.
+/* Estado da partida: pontos, vidas, distancia, vitoria/derrota e reinicio.
  * Nao conhece as regras: quem acerta, bate ou chega ao fim chama as funcoes.
  *
  * Interface:
+ *   createPartida({ meta }): meta = metros ate a vitoria
  *   ganharPontos(n), perderVida(), vencer(): so valem enquanto a partida esta em jogo
+ *   atualizarDistancia(metros): placar da distancia percorrida (so durante a partida)
  *   reiniciar(): volta ao inicio (tecla Enter, ligada no main.js)
  *   aoReiniciar(funcao): registra o que um modulo faz ao reiniciar (ex.: voltar o aviao ao inicio)
- *   pontos, vidas, estado: leitura */
+ *   pontos, vidas, distancia, estado: leitura */
 
 const VIDAS_INICIAIS = 3;
 
@@ -17,9 +19,10 @@ function criar(pai, classe, texto = '') {
 	return elemento;
 }
 
-export function createPartida() {
+export function createPartida({ meta }) {
 	let pontos = 0;
 	let vidas = VIDAS_INICIAIS;
+	let distancia = 0;	/* metros percorridos, inteiro */
 	let estado = 'jogando';	/* 'jogando' | 'vitoria' | 'derrota' */
 	const funcoesReinicio = [];
 
@@ -30,13 +33,17 @@ export function createPartida() {
 	const tela = criar(document.body, 'fim');
 	const titulo = criar(tela, 'fim-titulo');
 	const resultado = criar(tela, 'fim-pontos');
+	const percurso = criar(tela, 'fim-pontos');
 	criar(tela, 'fim-dica', 'Enter para jogar de novo');
 
 	function mostrar() {
-		placar.textContent = `Pontos ${pontos}   Vidas ${'♥'.repeat(Math.max(vidas, 0))}`;
+		placar.textContent = `Pontos ${pontos}   Vidas ${'♥'.repeat(Math.max(vidas, 0))}\nDistância ${distancia} / ${meta} m`;
 		tela.hidden = estado === 'jogando';
 		titulo.textContent = estado === 'vitoria' ? 'Vitória!' : 'Fim de jogo';
 		resultado.textContent = `${pontos} pontos`;
+		percurso.textContent = estado === 'vitoria'
+			? `Percurso completo: ${meta} m`
+			: `Você chegou a ${distancia} m de ${meta} m`;
 	}
 
 	function terminar(fim) {
@@ -49,11 +56,21 @@ export function createPartida() {
 	return {
 		get pontos() { return pontos; },
 		get vidas() { return vidas; },
+		get distancia() { return distancia; },
 		get estado() { return estado; },
 
 		ganharPontos(n) {
 			if (estado !== 'jogando') return;
 			pontos += n;
+			mostrar();
+		},
+
+		/* Recebe os metros percorridos; so conta durante a partida e nunca passa da meta */
+		atualizarDistancia(metros) {
+			if (estado !== 'jogando') return;
+			const metrosInteiros = Math.min(Math.floor(metros), meta);
+			if (metrosInteiros === distancia) return;	/* so redesenha se o numero mudou */
+			distancia = metrosInteiros;
 			mostrar();
 		},
 
@@ -72,6 +89,7 @@ export function createPartida() {
 		reiniciar() {
 			pontos = 0;
 			vidas = VIDAS_INICIAIS;
+			distancia = 0;
 			estado = 'jogando';
 			for (const funcao of funcoesReinicio) funcao();
 			mostrar();
