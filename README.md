@@ -29,7 +29,10 @@ src/
 ├── teclado.js      mapa de teclas: aoPressionar() (evento) e segurando() (tecla apertada)
 ├── textura.js      carregaTextura(): carrega e configura uma imagem de assets/texturas/
 ├── aleatorio.js    gerador pseudo-aleatório com semente (mulberry32)
-├── jogo/           comportamento: move as entidades (controle.js: avião)
+├── config.js       META (metros até a vitória) e alcance de visão: o cenário é gerado a partir deles
+├── partida.js      pontos, vidas, progresso, recorde, menu/pausa/vitória/derrota e reinício
+├── telaInicial.js  tela inicial (título, objetivo, controles, pontuação, botão JOGAR)
+├── jogo/           comportamento: move as entidades (controle.js: avião; inimigos.js, aneis.js, mira.js)
 ├── colisao.js      hitboxes (esferas) e testes de colisão
 ├── combate.js      tiros, colisões e anéis; avisa o que aconteceu por eventos
 ├── models/         personagens (avião, inimigos)
@@ -52,13 +55,13 @@ src/
 
 O modelo e o comportamento ficam em arquivos separados. O modelo (`src/models/`) diz como a coisa é e anima as peças internas (hélice, balanço). O módulo em `src/jogo/` move o `object` dele pela cena. Assim, quem move não edita o arquivo de quem modelou.
 
-- **`jogo/controle.js`**: o avião avança sozinho a 30 m/s em −Z, e W A S D o movem em X e Y dentro do corredor da avenida (x de −18 a 18 m, y de −20 a 10 m), inclinando para o lado da curva. Interface: `update(dt)`, `reiniciar()` e `distancia` (metros desde a partida).
+- **`jogo/controle.js`**: o avião avança sozinho a 30 m/s em −Z, e W A S D o movem em X e Y (y de −20 a 10 m; x até 34 m, já dentro da faixa dos prédios, que são sólidos), inclinando para o lado da curva. `LIMITE_X` (18 m) é o corredor da avenida, usado para sortear inimigos e anéis; `LIMITE_VOO` (34 m) é até onde o jogador pode ir. Interface: `update(dt)`, `reiniciar()` e `distancia` (metros desde a partida).
 - **Câmeras**: a 3ª pessoa acompanha todo o avanço e 70% do movimento lateral, para o avião se deslocar na tela; a livre anda junto com o avião.
 - **`jogo/inimigos.js`**: inimigos espalhados até a meta, com posição e ordem sorteadas a cada partida. Ficam invisíveis até o avião chegar perto. O delta faz uma investida (25 m/s, mirando onde o avião estava); o drone desce do céu, escolta 30 m à frente ziguezagueando e vai embora depois de 6 s.
 - **`jogo/aneis.js`**: X e Y dos anéis sorteados a cada partida, no máximo 20 m de um para o outro, dentro do corredor.
 - **`jogo/mira.js`**: mira 30 m à frente, na linha do tiro; fica verde quando o tiro vai acertar um inimigo.
-- **Meta**: `META`, no topo do `main.js`, é o único lugar do comprimento do percurso. A partida, os anéis e os inimigos se ajustam a ela.
-- **Reinício**: `inimigos.reiniciar()` e `percursoAneis.reiniciar()` rodam depois de `combate.reiniciar()`, que devolve tudo ao estado inicial antes do novo sorteio.
+- **Meta**: `META`, em `src/config.js`, é o único lugar do comprimento do percurso. A partida, o cenário, os anéis e os inimigos se ajustam a ela.
+- **Reinício**: `inimigos.reiniciar()` e `percursoAneis.reiniciar()` rodam depois de `combate.reiniciar()`, que devolve tudo ao estado inicial antes do novo sorteio. `nuvens.reiniciar()` devolve as nuvens aos lugares de partida (elas são recicladas para a frente do avião durante o voo).
 - **Ordem no loop do `main.js`**: controle → inimigos → entidades → combate → mira → câmeras → HUD → render. A câmera vem depois do controle; na ordem inversa, usaria a posição do frame anterior e a imagem tremeria.
 
 Tecla segurada (movimento contínuo): acrescentar `segurar: true` na linha da ação em `TECLAS` e perguntar a cada frame com `segurando('acao')`. Ela aparece na legenda do HUD sem precisar de `aoPressionar`.
@@ -159,6 +162,12 @@ combate.on('aviaoDanificado', () => partida.perderVida());
 - **Reinício:** `partida.reiniciar()` chama `combate.reiniciar()`, que devolve inimigos (posição e vida), anéis e tiros ao início.
 - **Tiros:** `src/world/tiros.js` mantém um conjunto fixo de projéteis (object pooling): `disparar()` reaproveita um tiro parado, nada é criado durante a partida.
 
+## Fase, prédios e regras
+
+- **Fase:** `META` (em `src/config.js`) define o tamanho. Chão, rua, prédios e anéis são gerados até a META (mais a visão de sobra); o `far` da câmera também vem de `VISAO`; o céu acompanha o avião e as nuvens voltam para a frente dele (`world/ceu.js`, `world/nuvens.js`). Os inimigos são de `jogo/inimigos.js`. A linha de chegada (`world/chegada.js`) fica em z = −`META`: faixa xadrez no asfalto, pórtico com “CHEGADA” acima da altura de voo e dois pilares sólidos, tratados na colisão como os prédios.
+- **Prédios sólidos:** `world/predios.js` expõe `caixas` (um `Box3` por prédio). `combate.js` testa as esferas do avião contra elas (`empurrarParaForaDaCaixa`, em `colisao.js`): o avião é empurrado para fora (nunca atravessa), leva 1 de dano e quica (`controle.quicar`). A câmera treme e a tela pisca em vermelho.
+- **Estados da partida:** `menu` → `jogando` ⇄ `pausado` → `vitoria` / `derrota` (`partida.js`). Vitória ao percorrer a META (bônus de 500 por vida restante); derrota ao zerar as vidas. O recorde fica no `localStorage`.
+
 ## Teclas
 
 O mapa de teclas fica em `TECLAS`, em `src/teclado.js`; para criar uma tecla nova, adicionar uma linha lá (o arquivo acusa erro se o mesmo código for usado duas vezes). Cada tecla é ligada a uma função no bloco "Controles" do `src/main.js`, então lendo o `main.js` dá para ver tudo o que o jogo responde. Os módulos não ouvem o teclado: expõem funções (ex.: `cameras.trocar()`, `ajudantes.alternar()`) e o `main.js` faz a ligação.
@@ -181,6 +190,9 @@ aoPressionar('ajudantes',		() => ajudantes.alternar());
 | 4 | Luzes de navegação |
 | N | Modo noite |
 | Espaço | Atirar (segurar repete) |
+| Enter | Iniciar / reiniciar a partida |
+| P | Pausar / continuar |
+| M | Voltar ao menu inicial |
 | R | Relevo das texturas (liga/desliga os `normalMap`) |
 | G | Grid e eixos |
 | H | Mostrar/esconder HUD |

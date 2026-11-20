@@ -1,13 +1,17 @@
 import * as THREE from 'three';
 import { carregaTextura } from '../textura.js';
 import { mulberry32 } from '../aleatorio.js';
+import { META, VISAO } from '../config.js';
 
 /* Chao - segue o contrato de entidade, ver models/cubo.js
  * Textura: Grass005 do ambientCG (CC0), https://ambientcg.com/view?id=Grass005 */
 
-const TAMANHO = 4000;	/* lado do chao, em metros */
 const TELHA = 20;		/* metros cobertos por uma repeticao da imagem */
-const DIVISOES = 200;	/* quadrados por lado: um vertice a cada 20 m, para a variacao de cor */
+/* Quadrado que cobre de z = +VISAO (atras do aviao) ate z = -(META + VISAO) (alem da META):
+ * acompanha o config.js. Multiplo de TELHA: um vertice a cada TELHA metros, para a variacao de cor */
+const TAMANHO = Math.ceil((META + 2 * VISAO) / TELHA) * TELHA;	/* lado do chao, em metros */
+const CENTRO_Z = -META / 2;
+const DIVISOES = TAMANHO / TELHA;	/* quadrados por lado */
 
 /* Ruido suave: valores aleatorios numa grade de `celulas` x `celulas`,
  * interpolados entre os 4 cantos da celula (bilinear). Devolve f(u, v) em [0, 1] */
@@ -30,8 +34,8 @@ function criarRuido(celulas, rand) {
  * Como `color` multiplica a textura, as manchas quebram o padrao repetido a cada TELHA metros */
 function colorirVertices(geo) {
 	const rand = mulberry32(7);
-	const manchas = criarRuido(40, rand);	/* manchas de ~100 m */
-	const detalhe = criarRuido(130, rand);	/* variacao de ~30 m */
+	const manchas = criarRuido(Math.round(TAMANHO / 100), rand);	/* manchas de ~100 m */
+	const detalhe = criarRuido(Math.round(TAMANHO / 30.8), rand);	/* variacao de ~30 m */
 
 	const escura = new THREE.Color(0.50, 0.72, 0.45);
 	const seca = new THREE.Color(1.10, 1.02, 0.70);
@@ -67,7 +71,7 @@ export function createChao() {
 		})
 	);
 	chao.rotation.x = -Math.PI / 2;	/* plano nasce em pe; deita ele */
-	chao.position.y = CHAO_Y;
+	chao.position.set(0, CHAO_Y, CENTRO_Z);
 
 	return {
 		object: chao,

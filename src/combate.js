@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { segurando } from './teclado.js';
 import { mulberry32 } from './aleatorio.js';
-import { HITBOX, Hitbox, hitboxesSeCruzam, segmentoTocaHitbox } from './colisao.js';
+import { HITBOX, Hitbox, hitboxesSeCruzam, segmentoTocaHitbox, empurrarParaForaDaCaixa } from './colisao.js';
 
 /* Combate: disparos, colisões e coleta de anéis.
 - main.js chama update(dt) a cada frame, depois das entidades.
@@ -19,7 +19,8 @@ Eventos (dados entre chaves):
 	tiroDisparado { dono: 'aviao' | 'inimigo', inimigo? }
 	inimigoAtingido { inimigo, tipo, vidaRestante }
 	inimigoAbatido { inimigo, tipo, por: 'tiro' | 'colisao' }
-	aviaoDanificado { causa: 'tiro' | 'drone' | 'delta', dano, invulneravelPor }
+	aviaoDanificado { causa: 'tiro' | 'drone' | 'delta' | 'predio', dano, invulneravelPor }
+	aviaoBateuPredio { empurrao }  (todo frame em que o aviao encosta num predio, mesmo invulneravel; Vector3 com o deslocamento ja aplicado, valido so durante a chamada)
 	anelColetado { indice, coletados, total }
 	aneisCompletos { total }
 	(inimigo = entidade registrada; tipo = 'drone' ou 'delta')
@@ -38,7 +39,7 @@ const INIMIGOS = {
 };
 const ALCANCE_INIMIGO = 140; // m: o inimigo so atira com o avião dentro desta distância
 const FOLGA_FRENTE = 5;		 // m: e só se estiver pelo menos isto a frente do avião (-Z)
-const DANO = { tiro: 1, drone: 1, delta: 1 }; // pontos de dano por causa
+const DANO = { tiro: 1, drone: 1, delta: 1, predio: 1 }; // pontos de dano por causa
 const INVULNERAVEL = 1;					  	  // seg sem levar dano depois de ser atingido (evita perder tudo num contato só)
 const COLISAO_ABATE_INIMIGO = true;			  // bater num inimigo o destroi e o avião leva dano
 
@@ -48,8 +49,10 @@ const _direcao = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _posInimigo = new THREE.Vector3();
 const _posAnel = new THREE.Vector3();
+const _empurrao = new THREE.Vector3();
+const MARGEM_PREDIO = 6; // m: so testa os predios com a caixa a esta distancia (em z) do aviao
 
-export function createCombate({ aviao, tiros, aneis }) {
+export function createCombate({ aviao, tiros, aneis, predios }) {
 	const rand = mulberry32(77);
 	const hitboxAviao = new Hitbox(aviao.object, HITBOX.aviao);
 	const inimigos = [];
@@ -157,6 +160,20 @@ export function createCombate({ aviao, tiros, aneis }) {
 		}
 	}
 
+	function corpoContraPredios() { // o predio eh solido: o aviao eh empurrado para fora e leva dano (1x por invulnerabilidade)
+		if (!predios) return;
+		_empurrao.set(0, 0, 0);
+		let bateu = false;
+		for (const caixa of predios.caixas) {
+			if (caixa.max.z < _centro.z - MARGEM_PREDIO || caixa.min.z > _centro.z + MARGEM_PREDIO) continue; // longe em z
+			if (empurrarParaForaDaCaixa(hitboxAviao, caixa, _empurrao)) bateu = true;
+		}
+		if (!bateu) return;
+		aviao.object.position.add(_empurrao); // sempre empurra, mesmo invulneravel: nao da para atravessar a parede
+		danificarAviao('predio');
+		emitir('aviaoBateuPredio', { empurrao: _empurrao });
+	}
+
 	function coletarAneis() { // conta quando o centro do avião cruza o plano do anel, de frente (-Z), por dentro dele
 		if (temAnterior) {
 			for (let i = 0; i < aneis.aneis.length; i++) {
@@ -224,6 +241,7 @@ export function createCombate({ aviao, tiros, aneis }) {
 			tirosContraInimigos();
 			tirosContraAviao();
 			corposContraAviao();
+			corpoContraPredios();
 			coletarAneis();
 		},
 

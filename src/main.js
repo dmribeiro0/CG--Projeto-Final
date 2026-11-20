@@ -5,6 +5,8 @@ import { aoPressionar } from './teclado.js';
 import { createRelevo } from './relevo.js';
 import { createPartida } from './partida.js';
 import { createCombate } from './combate.js';
+import { createTelaInicial } from './telaInicial.js';
+import { META } from './config.js';	/* Meta: metros ate a vitoria. Valor unico do jogo: partida, cenario, aneis e inimigos usam esta */
 /* Importar aqui cada entidade */
 import { createCubo } from './models/cubo.js';
 import { createAviao } from './models/aviao.js';
@@ -15,6 +17,7 @@ import { createChao } from './world/chao.js';
 import { createRua } from './world/rua.js';
 import { createPredios } from './world/predios.js';
 import { createNuvens } from './world/nuvens.js';
+import { createChegada } from './world/chegada.js';
 import { createAneis } from './world/aneis.js';
 import { createTiros } from './world/tiros.js';
 import { createControleFov } from './world/projecao.js';
@@ -23,9 +26,6 @@ import { createControleAviao } from './jogo/controle.js';
 import { createInimigos } from './jogo/inimigos.js';
 import { createPercursoAneis } from './jogo/aneis.js';
 import { createMira } from './jogo/mira.js';
-
-/* Meta: metros ate a vitoria. Valor unico do jogo: a partida, os aneis e os inimigos se distribuem por ele */
-const META = 1000;
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xbfe3ff, 250, 900);	/* Neblina da cor do horizonte: esconde o fim do cenario */
@@ -55,22 +55,23 @@ const luzes = adicionar(createLuzes());
 const ajudantes = adicionar(createAjudantes());	/* grid de 1 m e eixos; comecam escondidos */
 // adicionar(createCubo());	/* apenas um exemplo de entidade, descomente a linha para mostrar */
 
-/* Cenario: o percurso se estende a frente do aviao, no sentido -Z */
-const ceu = adicionar(createCeu());
-adicionar(createChao());		/* 30 m abaixo da altura de voo */
-adicionar(createRua());			/* avenida e calcadas sob o percurso */
-adicionar(createPredios());
-adicionar(createNuvens());
-const aneis = adicionar(createAneis({ comprimento: META }));	/* um anel a cada 50 m, de z = -60 ate a meta */
-const tiros = adicionar(createTiros());		/* projeteis do aviao e dos inimigos */
-
-/* Personagens: aviao na origem */
+/* Personagens: aviao na origem. Criado antes do cenario: o ceu e as nuvens acompanham o aviao */
 const aviao = adicionar(createAviao());
 const controle = createControleAviao(aviao);	/* W A S D move; avanca sozinho em -Z */
 
-/* Combate: depois das entidades, porque usa o aviao, os aneis e os tiros.
+/* Cenario: o percurso se estende a frente do aviao, no sentido -Z, ate a META (config.js) */
+const ceu = adicionar(createCeu({ aviao }));	/* acompanha o aviao: a camera nunca sai de dentro dele */
+adicionar(createChao());		/* 30 m abaixo da altura de voo */
+adicionar(createRua());			/* avenida e calcadas sob o percurso */
+const predios = adicionar(createPredios());	/* predios.caixas: colisao (combate.js) */
+const chegada = adicionar(createChegada());	/* portico e faixa em z = -META; chegada.caixas: os pilares sao solidos */
+const nuvens = adicionar(createNuvens({ aviao }));	/* reciclam a frente do aviao */
+const aneis = adicionar(createAneis({ comprimento: META }));	/* um anel a cada 100 m, de z = -60 ate a meta */
+const tiros = adicionar(createTiros());		/* projeteis do aviao e dos inimigos */
+
+/* Combate: depois das entidades, porque usa o aviao, os aneis, os tiros e os predios.
  * Cada inimigo precisa ser registrado para poder ser acertado, atirar e colidir. */
-const combate = createCombate({ aviao, tiros, aneis });
+const combate = createCombate({ aviao, tiros, aneis, predios: { caixas: [...predios.caixas, ...chegada.caixas] } });	/* obstaculos solidos */
 
 /* Inimigos: espalhados ate a meta, criados e registrados no combate por jogo/inimigos.js */
 const inimigos = createInimigos({ adicionar, combate, aviao, meta: META });
@@ -90,18 +91,25 @@ const fov = createControleFov(() => cameras.todas);
 const relevo = createRelevo(scene);
 
 /* Partida: pontos, vidas e fim de jogo. Os modulos chamam partida.ganharPontos(), perderVida() e vencer() */
-const partida = createPartida({ meta: META });	/* META definida no topo */
+const partida = createPartida({ meta: META });
 partida.aoReiniciar(() => controle.reiniciar());	/* Enter: aviao volta ao inicio */
 partida.aoReiniciar(() => combate.reiniciar());		/* inimigos, aneis e tiros tambem */
+partida.aoReiniciar(() => nuvens.reiniciar());		/* nuvens reciclam a frente do aviao: voltam aos lugares de partida */
 /* Depois do combate: ele devolve inimigos e aneis ao estado inicial, e estes sorteiam posicoes novas */
 partida.aoReiniciar(() => inimigos.reiniciar());
 partida.aoReiniciar(() => percursoAneis.reiniciar());
 
 /* O combate so avisa o que aconteceu (combate.on); aqui o jogo decide o que cada coisa vale */
 const PONTOS = { anel: 100, drone: 200, delta: 300 };
+const BONUS_VIDA = 500;	/* na vitoria: pontos por vida que sobrou */
+
+/* Tela inicial: aparece no estado 'menu' e some quando a partida comeca */
+const telaInicial = createTelaInicial({ aoIniciar: () => partida.reiniciar(), meta: META, pontos: PONTOS });
+partida.aoMudarEstado((estado) => estado === 'menu' ? telaInicial.mostrar() : telaInicial.esconder());
 combate.on('anelColetado',	() => partida.ganharPontos(PONTOS.anel));
 combate.on('inimigoAbatido',	({ tipo, por }) => { if (por === 'tiro') partida.ganharPontos(PONTOS[tipo]); });
-combate.on('aviaoDanificado',	({ dano }) => { for (let i = 0; i < dano; i++) partida.perderVida(); });
+combate.on('aviaoDanificado',	({ dano }) => { for (let i = 0; i < dano; i++) partida.perderVida(); cameras.tremer(0.8); });
+combate.on('aviaoBateuPredio',	({ empurrao }) => controle.quicar(empurrao));	/* combate ja afastou o aviao da parede */
 
 /* Controles: toda tecla do jogo eh ligada aqui (mapa de teclas em teclado.js) */
 aoPressionar('trocarCamera',	() => cameras.trocar());
@@ -112,6 +120,8 @@ aoPressionar('luzNavegacao',	() => { alternar(aviao.luzes.navEsq); alternar(avia
 aoPressionar('modoNoite',		() => luzes.alternarNoite({ ceu: ceu.object.material, fog: scene.fog }));
 aoPressionar('relevo',			() => relevo.alternar());
 aoPressionar('reiniciar',		() => partida.reiniciar());
+aoPressionar('pausar',			() => partida.alternarPausa());
+aoPressionar('menu',			() => partida.irParaMenu());
 aoPressionar('ajudantes',		() => ajudantes.alternar());
 aoPressionar('aumentarFov',		() => fov.aumentar());
 aoPressionar('diminuirFov',		() => fov.diminuir());
@@ -145,7 +155,10 @@ renderer.setAnimationLoop((tempo) => {
 		controle.update(dt);
 		inimigos.update(dt);
 		partida.atualizarDistancia(controle.distancia);
-		if (controle.distancia >= META) partida.vencer();
+		if (controle.distancia >= META) {
+			partida.ganharPontos(partida.vidas * BONUS_VIDA);	/* bonus antes de vencer: depois, ganharPontos nao vale */
+			partida.vencer();
+		}
 	}
 	for (const entidade of entidades) {
 		entidade.update(dt);
@@ -156,6 +169,9 @@ renderer.setAnimationLoop((tempo) => {
 		mira.update();	/* depois do combate: usa as hitboxes ja atualizadas neste frame */
 	}
 	cameras.update(dt);	/* depois das entidades: a camera segue a posicao ja atualizada do aviao */
+
+	/* Invulneravel apos dano: o aviao pisca (fora da 1a pessoa, onde esconderia o cockpit) */
+	aviao.object.visible = !(partida.estado === 'jogando' && combate.invulneravel && cameras.ativa.name !== '1ª pessoa' && Math.floor(tempo / 90) % 2);
 	hud.update();
 
 	/* MATRIZ DE PROJECAO - aplicada aqui: o render envia cameras.ativa.projectionMatrix ao vertex

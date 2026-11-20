@@ -24,8 +24,10 @@ function criarTexturaCeu() {
 	return textura;
 }
 
-export function createCeu() {
-	/* Esfera grande vista por dentro. Raio 800 < plano distante da camera (1000) */
+export function createCeu({ aviao } = {}) {
+	/* Esfera grande vista por dentro. Raio 800 < plano distante da camera (1000).
+	 * Acompanha o aviao: parada na origem, a camera sairia de dentro dela depois de 800 m
+	 * e o fundo ficaria preto */
 	const esfera = new THREE.Mesh(
 		new THREE.SphereGeometry(800, 32, 16),
 		new THREE.MeshBasicMaterial({
@@ -39,6 +41,8 @@ export function createCeu() {
 
 	return {
 		object: esfera,
-		update(dt) {}	/* Ceu estatico */
+		update(dt) {
+			if (aviao) esfera.position.copy(aviao.object.position);
+		}
 	}
 }

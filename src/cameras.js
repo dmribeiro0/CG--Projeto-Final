@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { VISAO } from './config.js';
 
 /* Cameras do jogo: criacao, troca e ajuste ao tamanho da janela.
  *
@@ -7,6 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
  *   ativa: camera usada no renderer.render()
  *   todas: lista das cameras (o controle de FOV muda todas juntas)
  *   trocar(): passa para a proxima camera (tecla C, ligada no main.js)
+ *   tremer(forca): treme a 3a pessoa por um instante (batida, dano)
  *   update(dt): chamada a cada frame, depois do update das entidades
  *   redimensionar(aspect): chamada quando a janela muda de tamanho
  *
@@ -34,7 +36,7 @@ function criarPerspectiva() {
 		75,										/* FOV - angulo do campo de visao */
 		window.innerWidth / window.innerHeight,	/* Aspect ratio */
 		0.1,									/* Plano de recorte mais proximo */
-		1000									/* Plano de recorte mais distante */
+		VISAO									/* Plano de recorte mais distante (config.js) */
 	);
 }
 
@@ -65,6 +67,7 @@ export function createCameras({ renderer, aviao }) {
 
 	const cameras = [terceira, primeira, livre];
 	let indice = 0;
+	let tremor = 0;	/* m: amplitude atual; decai sozinha em update() */
 
 	return {
 		get ativa() { return cameras[indice]; },
@@ -75,6 +78,8 @@ export function createCameras({ renderer, aviao }) {
 			controls.enabled = cameras[indice] === livre;
 		},
 
+		tremer(forca = 0.6) { tremor = Math.max(tremor, forca); },
+
 		update(dt) {
 			const posicao = aviao.object.position;
 
@@ -83,6 +88,11 @@ export function createCameras({ renderer, aviao }) {
 			base.set(posicao.x * SEGUIR_LADO, posicao.y * SEGUIR_LADO, posicao.z);
 			terceira.position.copy(base).add(OFFSET_TERCEIRA);
 			terceira.lookAt(alvo.copy(base).add(ALVO_TERCEIRA));
+			/* Tremor: depois do lookAt, so desloca a camera (a direcao do olhar nao muda) */
+			if (tremor > 0.001) {
+				terceira.position.add(alvo.set(Math.random() - 0.5, Math.random() - 0.5, 0).multiplyScalar(2 * tremor));
+				tremor *= Math.exp(-6 * dt);
+			} else tremor = 0;
 
 			/* Livre: camera e alvo da orbita andam o mesmo que o aviao andou, entao o enquadramento
 			 * escolhido com o mouse se mantem. Atualizada mesmo inativa, para estar perto ao trocar */

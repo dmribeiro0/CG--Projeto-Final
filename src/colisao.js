@@ -84,3 +84,35 @@ export function segmentoTocaHitbox(p0, p1, raioSegmento, hitbox) {
 	}
 	return false;
 }
+
+const _p = new THREE.Vector3();
+
+/* Hitbox (esferas) x predio (Box3, alinhado aos eixos).
+ * Se alguma esfera entrar na caixa, soma em `empurrao` o deslocamento que tira o aviao de dentro
+ * e devolve true. A saida eh SEMPRE para o corredor (x) ou para cima (y), nunca em z:
+ * o aviao avanca sozinho, e empurrar para tras o deixaria grudado na parede.
+ *   x: pela face voltada ao corredor da avenida (o predio fica a esquerda ou a direita)
+ *   y: pelo teto, quando o aviao desce sobre um predio baixo
+ * Escolhe UM eixo por predio (o de menor deslocamento para tirar todas as esferas): se cada
+ * esfera escolhesse o seu, o aviao saltaria na diagonal (x e y ao mesmo tempo) */
+export function empurrarParaForaDaCaixa(hitbox, caixa, empurrao) {
+	let bateu = false;
+	let penX = 0, penY = 0;	/* quanto a pior esfera entrou, em cada saida possivel */
+	const lado = Math.sign(caixa.min.x + caixa.max.x) || 1;	/* +1: predio a direita */
+	for (const e of hitbox.esferas) {
+		caixa.clampPoint(e.centro, _p);	/* ponto da caixa mais proximo do centro da esfera */
+		if (_p.distanceToSquared(e.centro) > e.raio * e.raio) continue;	/* nao encosta */
+		bateu = true;
+		penX = Math.max(penX, lado > 0 ? e.centro.x + e.raio - caixa.min.x : caixa.max.x - (e.centro.x - e.raio));
+		penY = Math.max(penY, caixa.max.y - (e.centro.y - e.raio));
+	}
+	if (!bateu) return false;
+
+	if (penX <= penY) {
+		const x = -lado * penX;
+		if (Math.abs(x) > Math.abs(empurrao.x)) empurrao.x = x;
+	} else if (penY > empurrao.y) {
+		empurrao.y = penY;
+	}
+	return true;
+}

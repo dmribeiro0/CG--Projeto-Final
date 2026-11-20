@@ -3,15 +3,16 @@ import { CHAO_Y } from './chao.js';
 import { mulberry32 } from '../aleatorio.js';
 import { BORDA_CALCADA } from './rua.js';
 import { carregaTextura } from '../textura.js';
+import { META, VISAO } from '../config.js';
 
 /* Predios nas laterais do percurso - segue o contrato de entidade
  * Texturas de fachada (ambientCG, CC0):
  *   vidro:  Facade006,  https://ambientcg.com/view?id=Facade006
  *   tijolo: Facade018A, https://ambientcg.com/view?id=Facade018A */
 
-const POR_LADO = 22;
 const Z_INICIO = 20;
-const Z_FIM = -700;
+const Z_FIM = -(META + VISAO);	/* ate depois da META, com a visao de sobra */
+const POR_LADO = Math.round((Z_INICIO - Z_FIM) / 33);	/* um predio a cada ~33 m, como antes */
 const X_MIN = BORDA_CALCADA;	/* fachada alinhada a calcada; mantem o corredor do aviao livre */
 
 /* telha:   metros cobertos por uma repeticao da imagem (largura = altura, imagem quadrada)
@@ -24,6 +25,7 @@ const FACHADAS = [
 export function createPredios() {
 	const rand = mulberry32(2024);
 	const grupo = new THREE.Group();
+	const caixas = [];	/* Box3 de cada predio, em coordenadas do mundo: usadas na colisao (combate.js) */
 
 	/* Materiais compartilhados: cada fachada em 2 tons (color multiplica a textura) + teto liso */
 	const paredes = FACHADAS.flatMap(f => [0xffffff, 0xdde3ea].map(cor => ({
@@ -62,11 +64,14 @@ export function createPredios() {
 				Z_INICIO - i * passo - rand() * (passo - d)	/* um predio por faixa de z: sem sobreposicao */
 			);
 			grupo.add(predio);
+			/* Os predios nunca se movem: a caixa eh calculada uma vez so */
+			caixas.push(new THREE.Box3().setFromObject(predio));
 		}
 	}
 
 	return {
 		object: grupo,
-		update(dt) {}	/* Predios estaticos por enquanto */
+		caixas,
+		update(dt) {}	/* Predios estaticos */
 	}
 }
