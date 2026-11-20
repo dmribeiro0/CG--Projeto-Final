@@ -5,9 +5,10 @@ import { carregaTextura } from '../textura.js';
 /* Nuvens do cenario - segue o contrato de entidade, ver models/cubo.js
  * Cada nuvem eh um Group com varias esferas achatadas ("puffs") sobrepostas. */
 
-const QTD_NUVENS = 40;
+const QTD_NUVENS = 55;
 const Z_INICIO = 40;		/* nuvens comecam um pouco atras do aviao */
-const Z_FIM = -700;		/* e se estendem ate o fundo do percurso inicial */
+const Z_FIM = -960;		/* e se estendem ate a borda da neblina (900 m) */
+const TRECHO = Z_INICIO - Z_FIM;	/* m: o aviao passou da nuvem, ela volta TRECHO metros a frente */
 
 /* Geometria e material compartilhados por todas as nuvens */
 const geometriaPuff = new THREE.SphereGeometry(1, 16, 12);
@@ -48,7 +49,7 @@ function criarNuvem(rand) {
 	return nuvem;
 }
 
-export function createNuvens() {
+export function createNuvens({ aviao } = {}) {
 	const rand = mulberry32(12345);	/* semente fixa: o cenario eh sempre o mesmo */
 	const grupo = new THREE.Group();
 
@@ -67,8 +68,23 @@ export function createNuvens() {
 		grupo.add(nuvem);
 	}
 
+	const zInicial = grupo.children.map((nuvem) => nuvem.position.z);
+
+	/* Reciclagem: so existem QTD_NUVENS, e o percurso eh de 3 km. A nuvem que ficou para tras
+	 * volta para a frente do aviao, escondida pela neblina: o ceu nunca esvazia */
 	return {
 		object: grupo,
-		update(dt) {}	/* Nuvens estaticas por enquanto */
+		/* Ao reiniciar o aviao volta a z = 0: sem isto, as nuvens ja recicladas ficariam
+		 * lá na frente e o inicio do percurso ficaria sem nuvens */
+		reiniciar() {
+			grupo.children.forEach((nuvem, i) => { nuvem.position.z = zInicial[i]; });
+		},
+		update(dt) {
+			if (!aviao) return;
+			const limite = aviao.object.position.z + 80;
+			for (const nuvem of grupo.children) {
+				if (nuvem.position.z > limite) nuvem.position.z -= TRECHO;
+			}
+		}
 	}
 }

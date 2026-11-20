@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { CHAO_Y } from './chao.js';
 import { carregaTextura } from '../textura.js';
+import { META, VISAO } from '../config.js';
 
 /* Avenida embaixo do percurso do aviao - segue o contrato de entidade, ver models/cubo.js
  * Duas pistas com canteiro central (o gramado do chao aparece entre elas) e calcadas com meio-fio.
@@ -18,8 +19,10 @@ const MEIO_FIO = 0.3;		/* altura da calcada */
 export const BORDA_CALCADA = CANTEIRO + PISTA + CALCADA;	/* onde os predios comecam */
 
 const Z_INICIO = 200;		/* atras da camera */
-const Z_FIM = -1000;		/* alem da neblina (900 m) */
-const COMPRIMENTO = Z_INICIO - Z_FIM;
+/* Vai ate depois da META, com a visao de sobra. Comprimento multiplo de PISTA: a textura
+ * repete um numero inteiro de vezes e a imagem nao fica cortada no fim */
+const COMPRIMENTO = Math.ceil((Z_INICIO + META + VISAO) / PISTA) * PISTA;
+const Z_FIM = Z_INICIO - COMPRIMENTO;
 const Z_CENTRO = (Z_INICIO + Z_FIM) / 2;
 
 /* Uma imagem de rua cobre PISTA x PISTA metros: a imagem repete so no comprimento (v),

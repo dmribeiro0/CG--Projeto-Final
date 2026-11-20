@@ -122,3 +122,119 @@ canvas {
 	font-size: 14px;
 	font-weight: 400;
 }
+
+/* Placar com duas linhas (pontos/vidas e distancia/recorde) */
+.placar {
+	text-align: right;
+}
+
+/* Pausa e fim de jogo: o resultado pode ter mais de uma linha */
+.fim-pontos {
+	font-size: 22px;
+	text-align: center;
+}
+
+/* Flash vermelho nas bordas quando o aviao leva dano (partida.js) */
+.dano {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0;
+	background: radial-gradient(ellipse at center, rgba(255, 40, 30, 0) 45%, rgba(255, 40, 30, 0.65) 100%);
+}
+
+.dano.ativo {
+	animation: dano 0.6s ease-out;
+}
+
+@keyframes dano {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+/* Tela inicial (telaInicial.js): por cima de tudo, inclusive do HUD de desenvolvimento.
+ * Fundo translucido: o aviao e o cenario aparecem atras */
+.inicio {
+	position: fixed;
+	inset: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.55), rgba(10, 16, 28, 0.88));
+	color: #f2f5fa;
+	font: 14px/1.5 ui-monospace, monospace;
+}
+
+/* display: flex acima venceria o atributo hidden */
+.inicio[hidden] {
+	display: none;
+}
+
+.inicio-caixa {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	max-width: 620px;
+	padding: 28px 36px;
+	text-align: center;
+	background: rgba(10, 16, 28, 0.75);
+	border: 1px solid rgba(170, 182, 200, 0.35);
+	border-radius: 10px;
+}
+
+.inicio-titulo {
+	font-size: 56px;
+	font-weight: 800;
+	letter-spacing: 6px;
+	line-height: 1.1;
+}
+
+.inicio-subtitulo {
+	color: #66f0ff;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+}
+
+.inicio-objetivo {
+	color: #aab6c8;
+}
+
+.inicio-colunas {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 16px 48px;
+	text-align: left;
+}
+
+.inicio-bloco {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.inicio-bloco-titulo {
+	margin-bottom: 4px;
+	color: #aab6c8;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	font-size: 12px;
+}
+
+.inicio-botao {
+	margin-top: 6px;
+	padding: 12px 56px;
+	cursor: pointer;
+	font: 700 20px ui-monospace, monospace;
+	letter-spacing: 4px;
+	color: #0a101c;
+	background: #66f0ff;
+	border: 0;
+	border-radius: 6px;
+}
+
+.inicio-botao:hover {
+	background: #a8f7ff;
+}

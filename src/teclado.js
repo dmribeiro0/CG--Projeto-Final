@@ -40,7 +40,9 @@ export const TECLAS = {
 	relevo:			{ code: 'KeyR',		rotulo: 'R',	descricao: 'Relevo das texturas' },
 
 	/* Partida */
-	reiniciar:		{ code: 'Enter',	rotulo: 'Enter',	descricao: 'Reiniciar partida' },
+	reiniciar:		{ code: 'Enter',	rotulo: 'Enter',	descricao: 'Iniciar / reiniciar' },
+	pausar:			{ code: 'KeyP',		rotulo: 'P',	descricao: 'Pausar' },
+	menu:			{ code: 'KeyM',		rotulo: 'M',	descricao: 'Menu inicial' },
 
 	/* Desenvolvimento e interface */
 	ajudantes:		{ code: 'KeyG',		rotulo: 'G',	descricao: 'Grid e eixos' },
